@@ -81,14 +81,17 @@ section[data-testid="stSidebar"] { display: none; }
     margin-bottom: 14px; letter-spacing: 0.5px;
 }
 
-/* Cards */
 .fs-card {
     background: white;
     border: 1.5px solid #E5E7EB;
     border-radius: 16px;
     padding: 20px;
-    margin-bottom: 12px;
+    margin-bottom: 20px; /* 余白を広げた */
     transition: border-color 0.15s;
+    min-height: 120px; /* 箱の高さを揃える */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 .fs-card:hover { border-color: #111; }
 .fs-card-selected {
@@ -102,9 +105,10 @@ section[data-testid="stSidebar"] { display: none; }
     border: 1.5px solid #E5E7EB;
     border-radius: 14px;
     padding: 16px 18px;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     cursor: pointer;
     display: flex; align-items: center; gap: 14px;
+    min-height: 80px; /* テンプレートも高さを揃える */
 }
 .tmpl-emoji { font-size: 28px; }
 .tmpl-name { font-weight: 700; font-size: 15px; color: #111; }
@@ -118,6 +122,11 @@ section[data-testid="stSidebar"] { display: none; }
 }
 .badge-draft {
     background: #FEF3C7; color: #92400E;
+    font-size: 11px; font-weight: 700;
+    padding: 3px 10px; border-radius: 20px;
+}
+.badge-rejected {
+    background: #FEE2E2; color: #991B1B;
     font-size: 11px; font-weight: 700;
     padding: 3px 10px; border-radius: 20px;
 }
@@ -197,10 +206,13 @@ div.stButton > button {
     border-radius: 12px !important;
     font-weight: 700 !important;
     font-family: 'Noto Sans JP', sans-serif !important;
-    font-size: 15px !important;
-    padding: 12px 0 !important;
+    font-size: 14px !important; /* 少し小さくして文字切れ防止 */
+    padding: 10px 4px !important; /* 横のパディングを狭めた */
     border: none !important;
     transition: all 0.15s !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
 }
 div.stButton > button:first-child {
     background: #111 !important;
@@ -372,26 +384,41 @@ def page_sign(contract_id: str):
     st.markdown('<hr class="fs-sep">', unsafe_allow_html=True)
 
     # 署名フォーム
-    st.markdown("### あなたの署名")
+    st.markdown("### 署名または差戻し")
     signer_name = st.text_input("氏名を入力してください", placeholder="山田 太郎")
     agreed = st.checkbox("上記内容に同意します")
 
-    if st.button("✍️ 署名して締結する"):
-        if not signer_name.strip():
-            st.error("氏名を入力してください")
-        elif not agreed:
-            st.error("内容に同意してください")
-        else:
-            ip = "unknown"
-            try:
-                from streamlit.web.server.websocket_headers import _get_websocket_headers
-                headers = _get_websocket_headers()
-                ip = headers.get("X-Forwarded-For", headers.get("X-Real-IP", "unknown"))
-            except Exception:
-                pass
-            sign_contract(contract["id"], signer_name.strip(), ip)
-            st.session_state.sign_done = signer_name.strip()
-            st.rerun()
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("✍️ 署名・締結"):
+            if not signer_name.strip():
+                st.error("氏名を入力してください")
+            elif not agreed:
+                st.error("内容に同意してください")
+            else:
+                ip = "unknown"
+                try:
+                    from streamlit.web.server.websocket_headers import _get_websocket_headers
+                    headers = _get_websocket_headers()
+                    ip = headers.get("X-Forwarded-For", headers.get("X-Real-IP", "unknown"))
+                except Exception:
+                    pass
+                sign_contract(contract["id"], signer_name.strip(), ip)
+                st.session_state.sign_done = signer_name.strip()
+                st.rerun()
+    with col2:
+        if st.button("❌ 差戻す"):
+            st.session_state.show_reject = True
+
+    if st.session_state.get("show_reject"):
+        with st.form("reject_form"):
+            reason = st.text_area("差戻しの理由（任意）", placeholder="金額に誤りがあります、等")
+            if st.form_submit_button("差戻しを確定する"):
+                from db import reject_contract
+                reject_contract(contract["id"], reason)
+                st.session_state.show_reject = False
+                st.session_state.reject_done = True
+                st.rerun()
 
     if st.session_state.get("sign_done"):
         name = st.session_state.sign_done
@@ -401,6 +428,18 @@ def page_sign(contract_id: str):
             <div style="font-size:40px;margin-bottom:10px;">🎉</div>
             <h2>締結完了！</h2>
             <p>{name} さんの署名が完了しました</p>
+        </div>
+        """,
+            unsafe_allow_html=True,
+        )
+    
+    if st.session_state.get("reject_done"):
+        st.markdown(
+            """
+        <div style="background:#FEE2E2;border-radius:16px;padding:28px;text-align:center;margin-top:16px;color:#991B1B;">
+            <div style="font-size:40px;margin-bottom:10px;">👋</div>
+            <h2>差戻しました</h2>
+            <p>作成者に内容の再確認を依頼しました</p>
         </div>
         """,
             unsafe_allow_html=True,
@@ -650,12 +689,16 @@ def page_list(user):
         )
     else:
         for c in contracts:
-            status_badge = (
-                '<span class="badge-signed">締結済み ✅</span>'
-                if c["status"] == "signed"
-                else '<span class="badge-draft">未署名 ⏳</span>'
-            )
+            status_badge = ""
+            if c["status"] == "signed":
+                status_badge = '<span class="badge-signed">締結済み ✅</span>'
+            elif c["status"] == "rejected":
+                status_badge = '<span class="badge-rejected">差戻し ❌</span>'
+            else:
+                status_badge = '<span class="badge-draft">未署名 ⏳</span>'
+            
             signed_info = f"署名者: {c['signer_name']}" if c.get("signer_name") else f"作成: {c['created_at'][:10]}"
+            rejection_text = f"<div style='font-size:11px;color:#991B1B;margin-top:4px;'>理由: {c['rejection_reason']}</div>" if c.get("rejection_reason") else ""
 
             st.markdown(
                 f"""
@@ -672,6 +715,7 @@ def page_list(user):
                 </div>
                 <div style="font-size:13px;color:#374151;margin-bottom:4px;">📝 {c['content'][:30]}{'...' if len(c['content'])>30 else ''}</div>
                 <div style="font-size:12px;color:#6B7280;">{signed_info}</div>
+                {rejection_text}
             </div>
             """,
                 unsafe_allow_html=True,
@@ -743,11 +787,13 @@ def page_detail(user):
         return
 
     status = contract["status"]
-    status_badge = (
-        '<span class="badge-signed">締結済み ✅</span>'
-        if status == "signed"
-        else '<span class="badge-draft">未署名 ⏳</span>'
-    )
+    status_badge = ""
+    if status == "signed":
+        status_badge = '<span class="badge-signed">締結済み ✅</span>'
+    elif status == "rejected":
+        status_badge = '<span class="badge-rejected">差戻し ❌</span>'
+    else:
+        status_badge = '<span class="badge-draft">未署名 ⏳</span>'
 
     st.markdown(
         f"""

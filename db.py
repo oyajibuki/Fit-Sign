@@ -48,6 +48,7 @@ def init_db():
         signer_name TEXT,
         signer_ip TEXT,
         status TEXT DEFAULT 'draft',
+        rejection_reason TEXT,
         created_at DATETIME,
         signed_at DATETIME,
         hash TEXT
@@ -233,6 +234,20 @@ def sign_contract(contract_id, signer_name, signer_ip):
             "UPDATE users SET contract_count = contract_count + 1 WHERE id = ?",
             (row["creator_id"],),
         )
+    conn.commit()
+    conn.close()
+
+
+def reject_contract(contract_id, reason):
+    conn = get_conn()
+    c = conn.cursor()
+    c.execute(
+        """
+    UPDATE contracts SET status = 'rejected', rejection_reason = ?
+    WHERE id = ?
+    """,
+        (reason, contract_id),
+    )
     conn.commit()
     conn.close()
 
