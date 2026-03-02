@@ -839,8 +839,9 @@ def page_create(user):
         """,
             unsafe_allow_html=True,
         )
+        _lbl = ('\u2705 \u9078\u629e\u4e2d' if is_selected else ('\u9078\u629e\uff1a' + tmpl['name']))
         if st.button(
-            f"{'✅ ' if is_selected else ''}選択{'中' if is_selected else f'：{tmpl[\"name\"]}'}",
+            _lbl,
             key=f"tmpl_{tmpl['id']}",
         ):
             st.session_state.selected_template = tmpl
