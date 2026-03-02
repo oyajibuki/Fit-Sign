@@ -56,7 +56,7 @@ def init_db():
     )
     """)
 
-    # Insert default templates
+    # Insert default templates if empty
     c.execute("SELECT COUNT(*) FROM templates")
     if c.fetchone()[0] == 0:
         templates = [
@@ -118,16 +118,19 @@ def init_db():
             templates,
         )
 
-    # Safe migrations: use try/except to handle existing columns
-    try:
-        c.execute("ALTER TABLE users ADD COLUMN display_name TEXT DEFAULT ''")
-    except Exception:
-        pass
-    try:
-        c.execute("ALTER TABLE contracts ADD COLUMN rejection_reason TEXT")
-    except Exception:
-        pass
     conn.commit()
+
+    # Safe migrations - silently add columns if they don't exist
+    for sql in [
+        "ALTER TABLE users ADD COLUMN display_name TEXT DEFAULT ''",
+        "ALTER TABLE contracts ADD COLUMN rejection_reason TEXT",
+    ]:
+        try:
+            c.execute(sql)
+            conn.commit()
+        except Exception:
+            pass  # Column already exists
+
     conn.close()
 
 
@@ -146,7 +149,7 @@ def get_or_create_user(user_id):
     user = c.fetchone()
     if not user:
         c.execute(
-            "INSERT INTO users (id, created_at, plan, contract_count) VALUES (?, ?, 'free', 0)",
+            "INSERT INTO users (id, created_at, plan, contract_count, display_name) VALUES (?, ?, 'free', 0, '')",
             (user_id, datetime.now().isoformat()),
         )
         conn.commit()
@@ -289,7 +292,6 @@ def get_user_contracts(user_id):
 
 
 def delete_draft_contract(contract_id, creator_id):
-    """Delete a draft contract (only drafts can be deleted)."""
     conn = get_conn()
     c = conn.cursor()
     c.execute(
