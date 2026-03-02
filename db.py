@@ -22,7 +22,8 @@ def init_db():
         id TEXT PRIMARY KEY,
         created_at DATETIME,
         plan TEXT DEFAULT 'free',
-        contract_count INTEGER DEFAULT 0
+        contract_count INTEGER DEFAULT 0,
+        display_name TEXT DEFAULT ''
     )
     """)
 
@@ -117,6 +118,14 @@ def init_db():
             templates,
         )
 
+    conn.commit()
+    conn.close()
+
+
+def save_display_name(user_id, name):
+    conn = get_conn()
+    c = conn.cursor()
+    c.execute("UPDATE users SET display_name = ? WHERE id = ?", (name, user_id))
     conn.commit()
     conn.close()
 
