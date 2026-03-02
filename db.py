@@ -1,4 +1,4 @@
-import sqlite3
+﻿import sqlite3
 import uuid
 import hashlib
 import json
@@ -118,15 +118,15 @@ def init_db():
             templates,
         )
 
-    # ─── Safe migrations: add columns if they don’t exist ───
-    existing_users_cols = {row[1] for row in c.execute("PRAGMA table_info(users)")}
-    if "display_name" not in existing_users_cols:
+    # Safe migrations: use try/except to handle existing columns
+    try:
         c.execute("ALTER TABLE users ADD COLUMN display_name TEXT DEFAULT ''")
-
-    existing_contract_cols = {row[1] for row in c.execute("PRAGMA table_info(contracts)")}
-    if "rejection_reason" not in existing_contract_cols:
+    except Exception:
+        pass
+    try:
         c.execute("ALTER TABLE contracts ADD COLUMN rejection_reason TEXT")
-
+    except Exception:
+        pass
     conn.commit()
     conn.close()
 
