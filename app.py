@@ -577,17 +577,16 @@ def page_profile(user):
         key="profile_name_input",
     )
 
-    if st.button("✅ 保存してはじめる"):
-        if new_name.strip():
-            save_display_name(user["id"], new_name.strip())
-            st.success(f"「{new_name.strip()}」として登録しました！")
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("✅ 保存してはじめる", key="btn_save_profile"):
+            if new_name.strip():
+                save_display_name(user["id"], new_name.strip())
+                st.success(f"「{new_name.strip()}」として登録しました！")
             st.session_state.page = "home"
             st.rerun()
-        else:
-            st.error("名前を入力してください")
-
-    if current_name:
-        if st.button("← スキップ"):
+    with col2:
+        if st.button("→ スキップ", key="btn_skip_profile"):
             st.session_state.page = "home"
             st.rerun()
 
