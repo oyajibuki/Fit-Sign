@@ -528,7 +528,6 @@ def page_create(user):
 
     st.markdown('<hr class="fs-sep">', unsafe_allow_html=True)
     st.markdown("**② 業務内容**")
-    # Simplified Content Input
     sample_content = st.selectbox("サンプルの内容", options=CONTENT_OPTIONS, index=0)
     if sample_content == "任意入力（手入力）":
         content = st.text_input("内容を入力", placeholder="例: ウェブサイト制作")
@@ -536,19 +535,66 @@ def page_create(user):
         content = sample_content
         st.info(f"選択中: {content}")
 
-    st.markdown('<hr class="fs-sep">', unsafe_allow_html=True)
-    st.markdown("**③ 報酬金額**")
-    sample_amount = amount_drum() # unified drum
-    if sample_amount == "任意入力（手入力）":
-        final_amt_str = st.text_input("金額を入力（円）", placeholder="例: 123,456")
-    else:
-        final_amt_str = sample_amount
-        st.markdown(f'<div class="fs-card" style="text-align:center;padding:14px;background:#ECFDF5;border-color:#10B981;">💰 <strong style="font-size:18px;color:#065F46;">{final_amt_str}</strong></div>', unsafe_allow_html=True)
+    # --- Template-specific fields ---
+    tmpl_name = selected_tmpl["name"]
 
-    st.markdown('<hr class="fs-sep">', unsafe_allow_html=True)
-    st.markdown("**④ 契約日**")
-    dt = st.date_input("日付を選択", label_visibility="collapsed")
-    contract_date = dt.strftime("%Y/%m/%d")
+    start_date = ""
+    end_date = ""
+    payment_unit = ""
+    final_amt_str = ""
+    deadline = ""
+    contract_date = ""
+
+    # ---- Pattern A: 業務委託契約 ----
+    if "業務委託" in tmpl_name and "単発" not in tmpl_name:
+        st.markdown('<hr class="fs-sep">', unsafe_allow_html=True)
+        st.markdown("**③ 契約期間**")
+        c1, c2 = st.columns(2)
+        with c1:
+            st.markdown("<small>開始日</small>", unsafe_allow_html=True)
+            d_start = st.date_input("開始日", label_visibility="collapsed", key="d_start")
+            start_date = d_start.strftime("%Y/%m/%d")
+        with c2:
+            st.markdown("<small>終了日</small>", unsafe_allow_html=True)
+            d_end = st.date_input("終了日", label_visibility="collapsed", key="d_end")
+            end_date = d_end.strftime("%Y/%m/%d")
+
+        st.markdown('<hr class="fs-sep">', unsafe_allow_html=True)
+        st.markdown("**④ 報酬金額と支払単位**")
+        payment_unit = st.radio("支払単位", ["月額", "時給", "総額"], horizontal=True)
+        sample_amount = amount_drum()
+        if sample_amount == "任意入力（手入力）":
+            final_amt_str = st.text_input("金額を入力（円）", placeholder="例: 150,000")
+        else:
+            final_amt_str = sample_amount
+            st.markdown(f'<div class="fs-card" style="text-align:center;padding:14px;background:#ECFDF5;border-color:#17C080;">💰 <strong style="font-size:18px;color:#065F46;">{payment_unit} {final_amt_str}</strong></div>', unsafe_allow_html=True)
+
+        contract_date = start_date  # Used for signing date reference
+
+    # ---- Pattern B: 単発業務（請負） ----
+    elif "単発" in tmpl_name or "請負" in tmpl_name:
+        st.markdown('<hr class="fs-sep">', unsafe_allow_html=True)
+        st.markdown("**③ 履行報酬金額**")
+        sample_amount = amount_drum()
+        if sample_amount == "任意入力（手入力）":
+            final_amt_str = st.text_input("金額を入力（円）", placeholder="例: 50,000")
+        else:
+            final_amt_str = sample_amount
+            st.markdown(f'<div class="fs-card" style="text-align:center;padding:14px;background:#ECFDF5;border-color:#17C080;">💰 <strong style="font-size:18px;color:#065F46;">{final_amt_str}</strong></div>', unsafe_allow_html=True)
+
+        st.markdown('<hr class="fs-sep">', unsafe_allow_html=True)
+        st.markdown("**④ 納期（納品期限）**")
+        d_deadline = st.date_input("納期", label_visibility="collapsed", key="d_deadline")
+        deadline = d_deadline.strftime("%Y/%m/%d")
+        contract_date = deadline
+
+    # ---- Pattern C: 同意書 ----
+    else:  # 同意書 - no amount
+        st.markdown('<hr class="fs-sep">', unsafe_allow_html=True)
+        st.markdown("**③ 同意日**")
+        d_contract = st.date_input("日付を選択", label_visibility="collapsed", key="d_contract")
+        contract_date = d_contract.strftime("%Y/%m/%d")
+        final_amt_str = ""  # 同意書は金額なし
 
     st.markdown('<hr class="fs-sep">', unsafe_allow_html=True)
     col1, col2 = st.columns(2)
@@ -560,16 +606,33 @@ def page_create(user):
             if not content.strip():
                 st.error("内容を入力してください")
             else:
+                # Pack extra fields into a structured content string for DB storage
+                extra = {}
+                if start_date:
+                    extra["start_date"] = start_date
+                if end_date:
+                    extra["end_date"] = end_date
+                if payment_unit:
+                    extra["payment_unit"] = payment_unit
+                if deadline:
+                    extra["deadline"] = deadline
+
+                import json as _json
+                extra_json = _json.dumps(extra, ensure_ascii=False) if extra else ""
+                # Store extra fields in the content field as JSON suffix (sep: ␞)
+                stored_content = content.strip() + (f"␞{extra_json}" if extra_json else "")
+
                 contract_id = create_contract(
                     creator_id=user["id"],
                     template_id=selected_tmpl["id"],
-                    content=content.strip(),
-                    amount=final_amt_str.strip(),
+                    content=stored_content,
+                    amount=final_amt_str.strip() if final_amt_str else "",
                     contract_date=str(contract_date),
                 )
                 st.session_state.created_contract_id = contract_id
                 st.session_state.selected_template = None
                 nav_to("qr")
+
 
 
 def page_qr(user):
@@ -622,14 +685,30 @@ def page_qr(user):
         creator = get_user(contract["creator_id"])
         creator_name = creator.get("display_name") or "未登録" if creator else "未登録"
         signer_name = contract.get("signer_name") or "（受託者）"
+        raw_content = contract["content"]
+        if "␞" in raw_content:
+            disp_content, _extra_json = raw_content.split("␞", 1)
+            import json as _pj
+            try:
+                _xtra = _pj.loads(_extra_json)
+            except Exception:
+                _xtra = {}
+        else:
+            disp_content = raw_content
+            _xtra = {}
         body = contract["template_body"].format(
-            content=contract["content"], 
-            amount=contract["amount"], 
+            content=disp_content,
+            amount=contract["amount"],
             contract_date=contract["contract_date"],
             creator_name=creator_name,
-            signer_name=signer_name
+            signer_name=signer_name,
+            start_date=_xtra.get("start_date", contract["contract_date"]),
+            end_date=_xtra.get("end_date", ""),
+            payment_unit=_xtra.get("payment_unit", ""),
+            deadline=_xtra.get("deadline", contract["contract_date"]),
         )
         st.markdown(f'<div class="contract-body">{body}</div>', unsafe_allow_html=True)
+
 
     if st.button("🔄 署名状況を確認"):
         st.rerun()

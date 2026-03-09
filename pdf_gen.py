@@ -85,21 +85,38 @@ def generate_pdf(contract: dict) -> BytesIO:
     story.append(Paragraph(f"FitSign 合意記録  |  契約ID: {contract.get('id', '')}", subtitle_style))
     story.append(HRFlowable(width="100%", thickness=2, color=colors.HexColor("#111827")))
     story.append(Spacer(1, 6 * mm))
-
     # Contract body
     body_template = contract.get("template_body", "")
-    
+
+    # Parse extra fields stored in content field (sep: ␞)
+    raw_content = contract.get("content", "")
+    if "␞" in raw_content:
+        content_part, extra_json = raw_content.split("␞", 1)
+        import json as _json
+        try:
+            extra = _json.loads(extra_json)
+        except Exception:
+            extra = {}
+    else:
+        content_part = raw_content
+        extra = {}
+
     creator = get_user(contract.get("creator_id"))
     creator_name = creator.get("display_name") or "未登録" if creator else "未登録"
     signer_name = contract.get("signer_name") or "（受託者）"
-    
+
     body_text = body_template.format(
-        content=contract.get("content", ""),
+        content=content_part,
         amount=contract.get("amount", ""),
         contract_date=contract.get("contract_date", ""),
         creator_name=creator_name,
         signer_name=signer_name,
+        start_date=extra.get("start_date", contract.get("contract_date", "")),
+        end_date=extra.get("end_date", ""),
+        payment_unit=extra.get("payment_unit", ""),
+        deadline=extra.get("deadline", contract.get("contract_date", "")),
     )
+
     for line in body_text.split("\n"):
         story.append(Paragraph(line if line.strip() else "&nbsp;", body_style))
 
