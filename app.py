@@ -248,10 +248,17 @@ CONTENT_OPTIONS_BY_TEMPLATE = {
         "写真撮影・レタッチ",
         "任意入力（手入力）",
     ],
-    "同意": [
+    "同意_ビジネス": [
         "秘密保持に関する同意（NDA）",
         "肖像権・著作権の使用許諾",
         "単発の軽微な作業合意",
+        "トラブル時の免責同意",
+        "任意入力（手入力）",
+    ],
+    "同意_プライベート": [
+        "プライベートな関係に関する合意",
+        "密室での面会・交際に関する合意",
+        "宿泊を伴う旅行の合意",
         "トラブル時の免責同意",
         "任意入力（手入力）",
     ],
@@ -542,33 +549,46 @@ def page_create(user):
 
     st.markdown('<hr class="fs-sep">', unsafe_allow_html=True)
 
-    # Pick content options dynamically based on template name
     tmpl_name_early = selected_tmpl["name"]
+
     if "業務委託" in tmpl_name_early and "単発" not in tmpl_name_early:
-        _content_key = "業務委託"
+        _tmpl_key = "業務委託"
     elif "単発" in tmpl_name_early or "請負" in tmpl_name_early:
-        _content_key = "単発"
+        _tmpl_key = "単発"
     else:
-        _content_key = "同意"
+        _tmpl_key = "同意"
+
+    consent_type = ""
+    if _tmpl_key == "同意":
+        st.markdown('<hr class="fs-sep">', unsafe_allow_html=True)
+        st.markdown("**② 同意書の用途を選択**")
+        consent_type = st.radio("用途", [
+            "ビジネス向け（秘密保持・ルール合意など）",
+            "プライベート向け（親密な関係・プライベートな合意など）"
+        ], label_visibility="collapsed")
+        
+        _content_key = "同意_プライベート" if "プライベート" in consent_type else "同意_ビジネス"
+    else:
+        _content_key = _tmpl_key
+
     content_opts = CONTENT_OPTIONS_BY_TEMPLATE[_content_key]
 
-    if _content_key == "同意":
-        st.markdown("**② 対象事項・概要**")
+    st.markdown('<hr class="fs-sep">', unsafe_allow_html=True)
+    if _tmpl_key == "同意":
+        st.markdown("**③ 対象事項・概要**")
         sample_content = st.selectbox("対象事項・概要", options=content_opts, index=0, key="content_select")
     else:
         st.markdown("**② 業務内容**")
         sample_content = st.selectbox("業務内容", options=content_opts, index=0, key="content_select")
 
     if sample_content == "任意入力（手入力）":
-        content = st.text_input("内容を入力", placeholder="例: ウェブサイト制作" if _content_key != "同意" else "例: ルール合意")
+        content = st.text_input("内容を入力", placeholder="例: ウェブサイト制作" if _tmpl_key != "同意" else "例: ルール合意")
 
     else:
         content = sample_content
         st.info(f"選択中: {content}")
 
     # --- Template-specific fields ---
-    tmpl_name = selected_tmpl["name"]
-
     start_date = ""
     end_date = ""
     payment_unit = ""
@@ -577,7 +597,7 @@ def page_create(user):
     contract_date = ""
 
     # ---- Pattern A: 業務委託契約 ----
-    if "業務委託" in tmpl_name and "単発" not in tmpl_name:
+    if _tmpl_key == "業務委託":
         st.markdown('<hr class="fs-sep">', unsafe_allow_html=True)
         st.markdown("**③ 契約期間**")
         c1, c2 = st.columns(2)
@@ -603,7 +623,7 @@ def page_create(user):
         contract_date = start_date  # Used for signing date reference
 
     # ---- Pattern B: 単発業務（請負） ----
-    elif "単発" in tmpl_name or "請負" in tmpl_name:
+    elif _tmpl_key == "単発":
         st.markdown('<hr class="fs-sep">', unsafe_allow_html=True)
         st.markdown("**③ 履行報酬金額**")
         sample_amount = amount_drum()
@@ -621,14 +641,6 @@ def page_create(user):
 
     # ---- Pattern C: 同意書 ----
     else:  # 同意書 - no amount
-        consent_type = ""
-        st.markdown('<hr class="fs-sep">', unsafe_allow_html=True)
-        st.markdown("**③ 同意書の用途を選択**")
-        consent_type = st.radio("用途", [
-            "ビジネス向け（秘密保持・ルール合意など）",
-            "プライベート向け（親密な関係・プライベートな合意など）"
-        ], label_visibility="collapsed")
-
         st.markdown('<hr class="fs-sep">', unsafe_allow_html=True)
         st.markdown("**④ 同意日**")
         d_contract = st.date_input("日付を選択", label_visibility="collapsed", key="d_contract")
@@ -637,6 +649,7 @@ def page_create(user):
         final_amt_str = ""  # 同意書は金額なし
 
     st.markdown('<hr class="fs-sep">', unsafe_allow_html=True)
+
     col1, col2 = st.columns(2)
     with col1:
         if st.button("← 戻る", key="btn_back_create"):
