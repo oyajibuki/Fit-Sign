@@ -231,18 +231,32 @@ AMOUNT_OPTIONS = [
     "10万円", "30万円", "50万円", "100万円", "任意入力（手入力）"
 ]
 
-CONTENT_OPTIONS = [
-    "ウェブサイトのデザイン制作",
-    "システム開発・保守案",
-    "SNS運用代行・記事制作",
-    "ロゴ・バナー作成",
-    "動画編集・映像制作",
-    "ライティング・文章執筆",
-    "プログラミング講師・指導",
-    "イベント企画・運営補助",
-    "写真撮影・レタッチ",
-    "任意入力（手入力）"
-]
+CONTENT_OPTIONS_BY_TEMPLATE = {
+    "業務委託": [
+        "システム保守・運用サポート",
+        "SNS運用代行・コンサルティング",
+        "プログラミング講師・指導",
+        "イベント企画・運営補助",
+        "任意入力（手入力）",
+    ],
+    "単発": [
+        "ウェブサイトのデザイン制作",
+        "ロゴ・バナー作成",
+        "動画編集・映像制作",
+        "ライティング・文章執筆",
+        "システム開発",
+        "写真撮影・レタッチ",
+        "任意入力（手入力）",
+    ],
+    "同意": [
+        "秘密保持に関する同意（NDA）",
+        "肖像権・著作権の使用許諾",
+        "単発の軽微な作業合意",
+        "トラブル時の免責同意",
+        "任意入力（手入力）",
+    ],
+}
+
 
 
 def amount_drum(default_index: int = 0) -> str:
@@ -528,7 +542,18 @@ def page_create(user):
 
     st.markdown('<hr class="fs-sep">', unsafe_allow_html=True)
     st.markdown("**② 業務内容**")
-    sample_content = st.selectbox("サンプルの内容", options=CONTENT_OPTIONS, index=0)
+
+    # Pick content options dynamically based on template name
+    tmpl_name_early = selected_tmpl["name"]
+    if "業務委託" in tmpl_name_early and "単発" not in tmpl_name_early:
+        _content_key = "業務委託"
+    elif "単発" in tmpl_name_early or "請負" in tmpl_name_early:
+        _content_key = "単発"
+    else:
+        _content_key = "同意"
+    content_opts = CONTENT_OPTIONS_BY_TEMPLATE[_content_key]
+
+    sample_content = st.selectbox("業務内容", options=content_opts, index=0, key="content_select")
     if sample_content == "任意入力（手入力）":
         content = st.text_input("内容を入力", placeholder="例: ウェブサイト制作")
     else:
