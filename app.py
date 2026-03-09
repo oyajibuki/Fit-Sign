@@ -21,7 +21,7 @@ from db import (
 from pdf_gen import generate_pdf
 
 st.set_page_config(
-    page_title="FitSign",
+    page_title="Fit-Sign | 30秒で契約できる",
     page_icon="✍️",
     layout="centered",
     initial_sidebar_state="collapsed",
@@ -38,18 +38,18 @@ html, body, [class*="css"] { font-family:'Inter', sans-serif; background:#F8FAFC
 .main > div { padding-top:0 !important; background:#F8FAFC; }
 section[data-testid="stSidebar"] { display:none; }
 #MainMenu, footer, header { visibility:hidden; }
-.block-container { padding:0 1rem 5rem !important; max-width:480px !important; }
+.block-container { padding:0 1rem 5rem !important; max-width:540px !important; }
 
 /* Nav */
 .fs-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 0 14px; margin-bottom:16px; border-bottom: 1px solid #F1F5F9; }
 .fs-logo { font-family:'Space Grotesk',sans-serif; font-size:24px; font-weight:800; color:#0F172A; letter-spacing: -0.02em; }
-.fs-logo span { color:#10B981; }
+.fs-logo span { color:#17C080; }
 .fs-chip { background:#F1F5F9; border-radius:20px; padding:6px 14px; font-size:12px; color:#475569; font-weight:700; display:flex; align-items:center; gap:6px; }
 
 /* Hero */
 .fs-hero { text-align:center; padding:32px 0 24px; }
-.fs-hero h1 { font-family:'Inter',sans-serif; font-size:38px; font-weight:900; color:#0F172A; letter-spacing:-0.04em; line-height:1.1; margin:0 0 12px; }
-.fs-hero h1 span { color:#10B981; }
+.fs-hero h1 { font-family:'Inter',sans-serif; font-size:36px; font-weight:900; color:#0F172A; letter-spacing:-0.04em; line-height:1.1; margin:0 0 12px; }
+.fs-hero h1 span { color:#17C080; }
 .fs-hero p { font-size:15px; color:#64748B; margin:0; font-weight: 500; }
 
 /* Card */
@@ -59,12 +59,12 @@ section[data-testid="stSidebar"] { display:none; }
 .fs-steps { background:white; border-radius:24px; padding:24px; box-shadow:0 4px 20px rgba(15, 23, 42, 0.04); border: 1px solid #F1F5F9; }
 .step-item { display:flex; align-items:center; gap:16px; padding:12px 0; border-bottom:1px solid #F8FAFC; }
 .step-item:last-child { border-bottom:none; }
-.step-num { width:34px; height:34px; background:#0F172A; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:14px; font-weight:800; flex-shrink:0; }
+.step-num { width:34px; height:34px; background:#17C080; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:14px; font-weight:800; flex-shrink:0; }
 .step-text { font-size:14px; color:#475569; font-weight: 500; }
 
 /* Template card */
 .tmpl-card { background:white; border-radius:20px; padding:20px; margin-bottom:14px; display:flex; align-items:center; gap:16px; box-shadow:0 2px 8px rgba(0,0,0,0.04); border:2.5px solid #F1F5F9; min-height:86px; transition:all .2s; }
-.tmpl-card.selected { border-color:#10B981; background:#ECFDF5; }
+.tmpl-card.selected { border-color:#17C080; background:#ECFDF5; }
 
 /* Badges */
 .badge-signed { background:#D1FAE5; color:#065F46; font-size:11px; font-weight:800; padding:4px 12px; border-radius:20px; text-transform: uppercase; letter-spacing: 0.05em; }
@@ -89,13 +89,13 @@ section[data-testid="stSidebar"] { display:none; }
 .limit-bar-wrap { margin:16px 0; }
 .limit-label { font-size:13px; color:#64748B; margin-bottom:8px; display:flex; justify-content:space-between; font-weight: 600; }
 .limit-bar { height:8px; background:#F1F5F9; border-radius:4px; overflow:hidden; }
-.limit-fill { height:100%; background:#0F172A; border-radius:4px; }
+.limit-fill { height:100%; background:#17C080; border-radius:4px; }
 .limit-fill.warn { background:#F59E0B; }
 .limit-fill.full { background:#EF4444; }
 
 /* Plan */
 .plan-free { background:#F1F5F9; color:#475569; font-size:11px; font-weight:800; padding:3px 10px; border-radius:20px; }
-.plan-paid { background:#0F172A; color:white; font-size:11px; font-weight:800; padding:3px 10px; border-radius:20px; }
+.plan-paid { background:#17C080; color:white; font-size:11px; font-weight:800; padding:3px 10px; border-radius:20px; }
 
 /* Sep */
 .fs-sep { border:none; border-top:1.5px solid #F1F5F9; margin:24px 0; }
@@ -108,11 +108,11 @@ section[data-testid="stSidebar"] { display:none; }
 
 /* Buttons */
 div.stButton > button {
-    width:100%; border-radius:18px !important; font-weight:800 !important;
+    width:100%; border-radius:20px !important; font-weight:800 !important;
     font-family:'Inter', sans-serif !important; font-size:15px !important;
     padding:16px 12px !important; border:none !important;
     transition:all .25s cubic-bezier(0.2, 1, 0.3, 1) !important; white-space:nowrap;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
 }
 div.stButton > button:first-child { background:#1E293B !important; color:white !important; }
 div.stButton > button:first-child:hover { background:#0F172A !important; transform:translateY(-2px) !important; box-shadow:0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important; }
@@ -120,13 +120,13 @@ div.stButton > button:active { transform: translateY(0px) !important; }
 
 /* Large Primary Button */
 div.stButton > button[kind="primary"] {
-    background:#10B981 !important; color:white !important;
-    font-size: 22px !important; padding: 24px 16px !important; border-radius: 24px !important;
-    box-shadow: 0 10px 25px rgba(16, 185, 129, 0.2) !important;
+    background:#17C080 !important; color:white !important;
+    font-size: 20px !important; padding: 22px 16px !important; border-radius: 24px !important;
+    box-shadow: 0 10px 25px rgba(23, 192, 128, 0.25) !important;
 }
 div.stButton > button[kind="primary"]:hover {
-    background:#059669 !important; transform:translateY(-4px) !important;
-    box-shadow: 0 15px 35px rgba(16, 185, 129, 0.3) !important;
+    background:#129A66 !important; transform:translateY(-4px) !important;
+    box-shadow: 0 15px 35px rgba(23, 192, 128, 0.35) !important;
 }
 
 /* Inputs */
@@ -138,7 +138,7 @@ div.stTextArea > div > div > textarea {
 }
 div.stTextInput > div > div > input:focus,
 div.stTextArea > div > div > textarea:focus {
-    border-color:#10B981 !important; box-shadow:0 0 0 4px rgba(16, 185, 129, 0.1) !important; background:white !important;
+    border-color:#17C080 !important; box-shadow:0 0 0 4px rgba(23, 192, 128, 0.1) !important; background:white !important;
 }
 div.stInfo, div.stSuccess, div.stWarning, div.stError { border-radius:16px !important; padding: 18px !important; font-weight: 500; }
 
@@ -147,7 +147,7 @@ div.stInfo, div.stSuccess, div.stWarning, div.stError { border-radius:16px !impo
 .page-transition-exit  { animation: slideOutLeft .25s cubic-bezier(.22,.61,.36,1); }
 @keyframes slideInRight { from { transform:translateX(100vw); opacity:0; } to { transform:translateX(0); opacity:1; } }
 @keyframes slideOutLeft { from { transform:translateX(0); opacity:1; } to { transform:translateX(-100vw); opacity:0; } }
-/* Custom basic selectbox style (if needed) */
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -765,25 +765,96 @@ def page_tos(user):
     swipe_hint()
     render_nav(user)
     st.markdown("## 利用規約")
-    st.markdown("本サービスの利用規約は現在準備中です。")
-    if st.button("← ホームに戻る"):
+    st.markdown("""
+<div class="fs-card" style="font-size:14px; line-height:1.8;">
+
+<p><strong>第1条（適用）</strong></p>
+<p>本規約は、ユーザーと本サービスの運営者（以下「運営者」といいます。）との間の、電子契約サービス「Fit-Sign」（以下「本サービス」といいます。）の利用に関わる一切の関係に適用されるものとします。</p>
+<p>ユーザーは、本サービスを利用することにより、本規約に同意したものとみなされます。</p>
+
+<p><strong>第2条（サービスの内容と変更）</strong></p>
+<p>本サービスは、PDFファイル等への電子署名またはテキスト入力を補助するツールを提供します。</p>
+<p>運営者は、現在本サービスを無料で提供していますが、将来的に機能の追加、変更、または一部および全部の機能を有料化する権利を留保します。有料化または大幅な仕様変更を行う場合は、事前に本ウェブサイト上にて告知します。</p>
+
+<p><strong>第3条（禁止事項）</strong></p>
+<p>ユーザーは、本サービスの利用にあたり、以下の行為をしてはなりません。</p>
+<ul>
+  <li>法令または公序良俗に違反する行為</li>
+  <li>犯罪行為に関連する行為</li>
+  <li>運営者、本サービスの他のユーザー、または第三者のサーバーまたはネットワークの機能を破壊したり、妨害したりする行為</li>
+  <li>本サービスによって得られた情報を商業的に転用する行為（ただし、ユーザー自身の業務上の契約締結目的での利用はこれに該当しません）</li>
+  <li>虚偽の署名、または権限のない第三者の署名を無断で行う行為</li>
+</ul>
+
+<p><strong>第4条（免責事項）</strong></p>
+<p>運営者は、本サービスに事実上または法律上の瑕疵がないことを明示的にも黙示的にも保証しておりません。</p>
+<p>本サービスを利用して作成された契約書等の法的有効性、証拠力等について、運営者は一切の保証を行わず、これに起因するユーザー間の紛争について一切の責任を負いません。</p>
+<p>本サービスは一時的なデータ処理を行うものであり、アップロードされたファイルや署名データの永続的な保存を保証するものではありません。ユーザーは自身の責任においてデータのバックアップを行うものとします。</p>
+
+<p><strong>第5条（利用規約の変更）</strong></p>
+<p>運営者は、必要と判断した場合には、ユーザーに通知することなくいつでも本規約を変更することができるものとします。</p>
+
+</div>
+    """, unsafe_allow_html=True)
+    if st.button("← ホームに戻る", key="back_tos"):
         nav_back("home")
 
 def page_privacy(user):
     swipe_hint()
     render_nav(user)
     st.markdown("## プライバシーポリシー")
-    st.markdown("本サービスのプライバシーポリシーは現在準備中です。")
-    if st.button("← ホームに戻る"):
+    st.markdown("""
+<div class="fs-card" style="font-size:14px; line-height:1.8;">
+
+<p><strong>1. 収集する情報</strong></p>
+<p>本サービスでは、機能提供のために以下の情報を取得・処理する場合があります。</p>
+<ul>
+  <li>ユーザーがアップロードしたPDFファイルデータ</li>
+  <li>入力されたテキスト情報、電子署名データ</li>
+  <li>アクセスログ（IPアドレス、ブラウザ情報など）</li>
+</ul>
+
+<p><strong>2. 利用目的</strong></p>
+<p>収集した情報は、以下の目的で利用します。</p>
+<ul>
+  <li>本サービスの機能の提供・運営のため</li>
+  <li>ユーザーからのお問い合わせに回答するため</li>
+  <li>本サービスの利用状況の分析および機能改善のため</li>
+</ul>
+
+<p><strong>3. データの保存と破棄</strong></p>
+<p>本サービスに入力・アップロードされたファイルデータおよび署名データは、当該セッションの処理が完了した時点、または一定時間経過後に、サーバー上から自動的かつ不可逆的に破棄されます。運営者はこれらの契約内容を閲覧・保存・二次利用することはありません。</p>
+
+<p><strong>4. 第三者提供</strong></p>
+<p>運営者は、法令に基づく場合を除き、あらかじめユーザーの同意を得ることなく、第三者に個人情報またはアップロードされたデータを提供することはありません。</p>
+
+</div>
+    """, unsafe_allow_html=True)
+    if st.button("← ホームに戻る", key="back_privacy"):
         nav_back("home")
 
 def page_law(user):
     swipe_hint()
     render_nav(user)
     st.markdown("## 特定商取引法に基づく表記")
-    st.markdown("本サービスの特定商取引法に基づく表記は現在準備中です。")
-    if st.button("← ホームに戻る"):
+    st.markdown("""
+<div class="fs-card" style="font-size:14px; line-height:1.8;">
+<p style="color:#64748B; font-size:12px; margin-bottom:16px; border:1px solid #E2E8F0; border-radius:8px; padding:10px; background:#F8FAFC;">
+  ℹ️ 本サービスは現在完全無料で提供中のため、特定商取引法（通信販売）の表記義務は発生していません。将来の有料化に備えて、以下に事業者情報を掲載しています。
+</p>
+<table style="width:100%; border-collapse: collapse; font-size:13px;">
+  <tr><td style="padding:10px 0; border-bottom:1px solid #F1F5F9; font-weight:bold; width:38%; vertical-align:top;">販売業者</td><td style="padding:10px 0; border-bottom:1px solid #F1F5F9;">Fit-Sign</td></tr>
+  <tr><td style="padding:10px 0; border-bottom:1px solid #F1F5F9; font-weight:bold; vertical-align:top;">代表責任者</td><td style="padding:10px 0; border-bottom:1px solid #F1F5F9;">関 順子</td></tr>
+  <tr><td style="padding:10px 0; border-bottom:1px solid #F1F5F9; font-weight:bold; vertical-align:top;">所在地</td><td style="padding:10px 0; border-bottom:1px solid #F1F5F9;">〒418-0108<br>静岡県富士宮市猪之頭字内野941-35</td></tr>
+  <tr><td style="padding:10px 0; border-bottom:1px solid #F1F5F9; font-weight:bold; vertical-align:top;">連絡先</td><td style="padding:10px 0; border-bottom:1px solid #F1F5F9;">メール: oyajibuki@gmail.com<br>電話: 080-3733-4880<br><span style="font-size:12px; color:#64748B;">※お問い合わせは原則メールにて承っております</span></td></tr>
+  <tr><td style="padding:10px 0; border-bottom:1px solid #F1F5F9; font-weight:bold; vertical-align:top;">販売価格</td><td style="padding:10px 0; border-bottom:1px solid #F1F5F9;">現在はすべての機能を無料で提供しているため、該当事項はありません。</td></tr>
+  <tr><td style="padding:10px 0; font-weight:bold; vertical-align:top;">必要料金</td><td style="padding:10px 0;">インターネット接続にかかる通信回線等の諸費用は、お客様のご負担となります。</td></tr>
+</table>
+</div>
+    """, unsafe_allow_html=True)
+    if st.button("← ホームに戻る", key="back_law"):
         nav_back("home")
+
 
 
 # ──────────────────────────────────────────────

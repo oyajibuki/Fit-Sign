@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fit-Sign | シンプルで簡単な契約締結アプリ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#17C080',
+                        secondary: '#129A66',
+                        accent: '#F59E0B',
+                    },
+                    fontFamily: {
+                        sans: ['"Noto Sans JP"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans JP', sans-serif; }
+        .hero-bg {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+        }
+    </style>
+</head>
+<body class="text-gray-800 antialiased">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm fixed w-full z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-file-signature text-2xl" style="color:#17C080"></i>
+                <span class="font-bold text-xl tracking-tight text-gray-900">Fit-Sign</span>
+            </div>
+            <nav>
+                <a href="https://fit-sign.streamlit.app/" target="_blank" class="text-white px-5 py-2 rounded-full font-medium transition duration-300" style="background:#17C080;">
+                    無料で試す
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-bg pt-32 pb-20 lg:pt-40 lg:pb-28 border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="inline-flex items-center gap-2 bg-white border border-gray-200 text-sm text-gray-500 font-medium px-4 py-2 rounded-full mb-8 shadow-sm">
+                <span style="color:#17C080">✦</span> β版 公開中 — 完全無料でご利用いただけます
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+                面倒な契約作業、<br class="md:hidden">もっとあなたに「フィット」させよう。
+            </h1>
+            <p class="text-lg md:text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
+                Fit-Signは、誰でも直感的に使えるシンプルな電子契約アプリです。<br class="hidden md:block">
+                印刷・押印・郵送の手間をゼロに。まずは完全無料でスタートできます。
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="https://fit-sign.streamlit.app/" target="_blank" class="text-white text-lg font-bold py-4 px-8 rounded-full shadow-lg transition duration-300 transform hover:-translate-y-1" style="background:#17C080;">
+                    アプリを開く（完全無料）
+                </a>
+            </div>
+            <p class="mt-4 text-sm text-gray-500">※クレジットカード登録は不要です</p>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Fit-Signが選ばれる理由</h2>
+                <div class="w-20 h-1 mx-auto rounded" style="background:#17C080;"></div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-10">
+                <div class="text-center p-6 rounded-2xl bg-gray-50 border border-gray-100 hover:shadow-md transition duration-300">
+                    <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl" style="background:#dcfce7; color:#17C080;">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">驚くほどシンプル</h3>
+                    <p class="text-gray-600">複雑な設定やマニュアルは不要。画面の指示に従うだけで、誰でも迷わず数分で契約を完了できます。</p>
+                </div>
+                <div class="text-center p-6 rounded-2xl bg-gray-50 border border-gray-100 hover:shadow-md transition duration-300">
+                    <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl" style="background:#dcfce7; color:#17C080;">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">まずは無料で使える</h3>
+                    <p class="text-gray-600">基本的な機能はすべて無料でご利用いただけます。小規模な事業主様やフリーランスの方に最適です。</p>
+                </div>
+                <div class="text-center p-6 rounded-2xl bg-gray-50 border border-gray-100 hover:shadow-md transition duration-300">
+                    <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl" style="background:#dcfce7; color:#17C080;">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">安心のセキュリティ</h3>
+                    <p class="text-gray-600">アップロードされた書類や署名データは適切に処理・破棄され、安全な取引をサポートします。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="py-20 bg-gray-50 border-t border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">使い方はたったの3ステップ</h2>
+                <div class="w-20 h-1 mx-auto rounded" style="background:#17C080;"></div>
+            </div>
+
+            <div class="flex flex-col md:flex-row justify-center items-center gap-8 md:gap-4 relative">
+                <div class="flex-1 text-center w-full max-w-xs relative z-10">
+                    <div class="w-24 h-24 bg-white font-bold text-3xl rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border-4" style="border-color:#17C080; color:#17C080;">1</div>
+                    <h3 class="font-bold text-lg mb-2">情報の入力・QR発行</h3>
+                    <p class="text-gray-600 text-sm">必要な情報を入力して契約書を作成。<br>共有用のQRコード（URL）が発行されます。</p>
+                </div>
+                
+                <div class="hidden md:block w-16 h-1 bg-gray-300"></div>
+
+                <div class="flex-1 text-center w-full max-w-xs relative z-10">
+                    <div class="w-24 h-24 bg-white font-bold text-3xl rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border-4" style="border-color:#17C080; color:#17C080;">2</div>
+                    <h3 class="font-bold text-lg mb-2">QR読み取り・契約完了</h3>
+                    <p class="text-gray-600 text-sm">相手がスマホでQRを読み取り、<br>内容を確認してその場で契約完了します。</p>
+                </div>
+
+                <div class="hidden md:block w-16 h-1 bg-gray-300"></div>
+
+                <div class="flex-1 text-center w-full max-w-xs relative z-10">
+                    <div class="w-24 h-24 text-white font-bold text-3xl rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm" style="background:#17C080;">3</div>
+                    <h3 class="font-bold text-lg mb-2">PDFダウンロード</h3>
+                    <p class="text-gray-600 text-sm">契約が完了すると、<br>控えのPDFファイルをいつでもダウンロードできます。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="py-20 text-white text-center" style="background:#17C080;">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-bold mb-6">さあ、新しい契約体験を始めましょう</h2>
+            <p class="mb-10 text-lg" style="color:rgba(255,255,255,0.85)">ブラウザからすぐに利用可能です。面倒な登録作業はありません。</p>
+            <a href="https://fit-sign.streamlit.app/" target="_blank" class="inline-block bg-white hover:bg-gray-100 text-lg font-bold py-4 px-10 rounded-full shadow-lg transition duration-300" style="color:#17C080;">
+                無料でアプリを開く
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-400 py-12 text-sm text-center">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-center items-center gap-6 mb-8">
+                <a href="https://fit-sign.streamlit.app/?page=tos" target="_blank" class="hover:text-white transition">利用規約</a>
+                <a href="https://fit-sign.streamlit.app/?page=privacy" target="_blank" class="hover:text-white transition">プライバシーポリシー</a>
+                <a href="https://fit-sign.streamlit.app/?page=law" target="_blank" class="hover:text-white transition">特定商取引法に基づく表記</a>
+            </div>
+            <p>&copy; 2026 Fit-Sign. All rights reserved.</p>
+        </div>
+    </footer>
+
+</body>
+</html>
