@@ -16,7 +16,7 @@ from db import (
     get_user_contracts,
     upgrade_to_paid,
     delete_draft_contract,
-    save_display_name,
+    save_user_profile,
 )
 from pdf_gen import generate_pdf
 
@@ -32,107 +32,122 @@ st.set_page_config(
 # ──────────────────────────────────────────────
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Space+Grotesk:wght@500;700&display=swap');
-html, body, [class*="css"] { font-family:'Noto Sans JP',sans-serif; background:#F0F4FF !important; }
-.stApp { background:#F0F4FF !important; }
-.main > div { padding-top:0 !important; background:#F0F4FF; }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;700&display=swap');
+html, body, [class*="css"] { font-family:'Inter', sans-serif; background:#F8FAFC !important; }
+.stApp { background:#F8FAFC !important; }
+.main > div { padding-top:0 !important; background:#F8FAFC; }
 section[data-testid="stSidebar"] { display:none; }
 #MainMenu, footer, header { visibility:hidden; }
 .block-container { padding:0 1rem 5rem !important; max-width:480px !important; }
 
 /* Nav */
-.fs-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 0 14px; margin-bottom:16px; }
-.fs-logo { font-family:'Space Grotesk',sans-serif; font-size:22px; font-weight:700; color:#1A1A2E; }
-.fs-logo span { color:#00C48C; }
-.fs-chip { background:white; border:1.5px solid #E2E8F0; border-radius:20px; padding:4px 12px; font-size:12px; color:#4A5568; font-weight:500; }
+.fs-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 0 14px; margin-bottom:16px; border-bottom: 1px solid #F1F5F9; }
+.fs-logo { font-family:'Space Grotesk',sans-serif; font-size:24px; font-weight:800; color:#0F172A; letter-spacing: -0.02em; }
+.fs-logo span { color:#10B981; }
+.fs-chip { background:#F1F5F9; border-radius:20px; padding:6px 14px; font-size:12px; color:#475569; font-weight:700; display:flex; align-items:center; gap:6px; }
 
 /* Hero */
-.fs-hero { text-align:center; padding:28px 0 20px; }
-.fs-hero h1 { font-family:'Space Grotesk',sans-serif; font-size:36px; font-weight:700; color:#1A1A2E; letter-spacing:-1px; line-height:1.2; margin:0 0 10px; }
-.fs-hero h1 span { color:#00C48C; }
-.fs-hero p { font-size:14px; color:#718096; margin:0; }
+.fs-hero { text-align:center; padding:32px 0 24px; }
+.fs-hero h1 { font-family:'Inter',sans-serif; font-size:38px; font-weight:900; color:#0F172A; letter-spacing:-0.04em; line-height:1.1; margin:0 0 12px; }
+.fs-hero h1 span { color:#10B981; }
+.fs-hero p { font-size:15px; color:#64748B; margin:0; font-weight: 500; }
 
 /* Card */
-.fs-card { background:white; border-radius:20px; padding:20px; margin-bottom:16px; box-shadow:0 2px 12px rgba(0,0,0,0.06); }
+.fs-card { background:white; border-radius:24px; padding:24px; margin-bottom:20px; box-shadow:0 4px 20px rgba(15, 23, 42, 0.04); border: 1px solid #F1F5F9; }
 
 /* Steps */
-.fs-steps { background:white; border-radius:20px; padding:20px; box-shadow:0 2px 12px rgba(0,0,0,0.06); }
-.step-item { display:flex; align-items:center; gap:14px; padding:10px 0; border-bottom:1px solid #EDF2F7; }
+.fs-steps { background:white; border-radius:24px; padding:24px; box-shadow:0 4px 20px rgba(15, 23, 42, 0.04); border: 1px solid #F1F5F9; }
+.step-item { display:flex; align-items:center; gap:16px; padding:12px 0; border-bottom:1px solid #F8FAFC; }
 .step-item:last-child { border-bottom:none; }
-.step-num { width:32px; height:32px; background:#1A1A2E; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:13px; font-weight:700; flex-shrink:0; }
-.step-text { font-size:13px; color:#4A5568; }
+.step-num { width:34px; height:34px; background:#0F172A; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:14px; font-weight:800; flex-shrink:0; }
+.step-text { font-size:14px; color:#475569; font-weight: 500; }
 
 /* Template card */
-.tmpl-card { background:white; border-radius:16px; padding:16px 18px; margin-bottom:12px; display:flex; align-items:center; gap:14px; box-shadow:0 2px 8px rgba(0,0,0,0.06); border:2px solid transparent; min-height:76px; transition:border-color .15s; }
-.tmpl-card.selected { border-color:#00C48C; background:#F0FDF9; }
+.tmpl-card { background:white; border-radius:20px; padding:20px; margin-bottom:14px; display:flex; align-items:center; gap:16px; box-shadow:0 2px 8px rgba(0,0,0,0.04); border:2.5px solid #F1F5F9; min-height:86px; transition:all .2s; }
+.tmpl-card.selected { border-color:#10B981; background:#ECFDF5; }
 
 /* Badges */
-.badge-signed { background:#C6F6D5; color:#276749; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; }
-.badge-draft { background:#FEFCBF; color:#744210; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; }
-.badge-rejected { background:#FED7D7; color:#9B2335; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; }
+.badge-signed { background:#D1FAE5; color:#065F46; font-size:11px; font-weight:800; padding:4px 12px; border-radius:20px; text-transform: uppercase; letter-spacing: 0.05em; }
+.badge-draft { background:#FEF3C7; color:#92400E; font-size:11px; font-weight:800; padding:4px 12px; border-radius:20px; text-transform: uppercase; letter-spacing: 0.05em; }
+.badge-rejected { background:#FEE2E2; color:#991B1B; font-size:11px; font-weight:800; padding:4px 12px; border-radius:20px; text-transform: uppercase; letter-spacing: 0.05em; }
 
 /* Contract body */
-.contract-body { background:#F7FAFC; border-radius:12px; padding:20px; font-size:14px; line-height:1.8; white-space:pre-wrap; color:#2D3748; border:1px solid #E2E8F0; margin:16px 0; }
+.contract-body { background:#F8FAFC; border-radius:16px; padding:24px; font-family: 'Hiragino Mincho ProN', Georgia, serif; font-size:15px; line-height:1.9; white-space:pre-wrap; color:#1E293B; border:1px solid #E2E8F0; margin:20px 0; }
 
 /* QR */
-.qr-box { background:white; border-radius:20px; padding:28px; text-align:center; box-shadow:0 2px 12px rgba(0,0,0,0.06); margin:16px 0; }
+.qr-box { background:white; border-radius:28px; padding:40px; text-align:center; box-shadow:0 10px 40px rgba(0,0,0,0.06); margin:20px 0; border: 1px solid #F1F5F9; }
 
 /* State */
-.state-success { background:#C6F6D5; border-radius:20px; padding:28px; text-align:center; margin:20px 0; }
-.state-success h2 { font-size:22px; color:#276749; margin:0 0 6px; }
-.state-success p { font-size:13px; color:#2F855A; margin:0; }
-.state-rejected { background:#FED7D7; border-radius:20px; padding:28px; text-align:center; margin:20px 0; }
-.state-rejected h2 { font-size:22px; color:#9B2335; margin:0 0 6px; }
-.state-rejected p { font-size:13px; color:#C53030; margin:0; }
+.state-success { background:#ECFDF5; border-radius:24px; padding:40px; text-align:center; margin:24px 0; border: 1px solid #D1FAE5; }
+.state-success h2 { font-size:24px; color:#065F46; font-weight: 800; margin:0 0 8px; }
+.state-success p { font-size:14px; color:#047857; margin:0; font-weight: 500; }
+.state-rejected { background:#FEF2F2; border-radius:24px; padding:40px; text-align:center; margin:24px 0; border: 1px solid #FEE2E2; }
+.state-rejected h2 { font-size:24px; color:#991B1B; font-weight: 800; margin:0 0 8px; }
+.state-rejected p { font-size:14px; color:#B91C1C; margin:0; font-weight: 500; }
 
 /* Limit bar */
-.limit-bar-wrap { margin:12px 0; }
-.limit-label { font-size:12px; color:#718096; margin-bottom:6px; display:flex; justify-content:space-between; }
-.limit-bar { height:6px; background:#EDF2F7; border-radius:3px; overflow:hidden; }
-.limit-fill { height:100%; background:#1A1A2E; border-radius:3px; }
-.limit-fill.warn { background:#ECC94B; }
-.limit-fill.full { background:#FC8181; }
+.limit-bar-wrap { margin:16px 0; }
+.limit-label { font-size:13px; color:#64748B; margin-bottom:8px; display:flex; justify-content:space-between; font-weight: 600; }
+.limit-bar { height:8px; background:#F1F5F9; border-radius:4px; overflow:hidden; }
+.limit-fill { height:100%; background:#0F172A; border-radius:4px; }
+.limit-fill.warn { background:#F59E0B; }
+.limit-fill.full { background:#EF4444; }
 
 /* Plan */
-.plan-free { background:#EDF2F7; color:#4A5568; font-size:11px; font-weight:700; padding:2px 8px; border-radius:20px; }
-.plan-paid { background:#1A1A2E; color:white; font-size:11px; font-weight:700; padding:2px 8px; border-radius:20px; }
+.plan-free { background:#F1F5F9; color:#475569; font-size:11px; font-weight:800; padding:3px 10px; border-radius:20px; }
+.plan-paid { background:#0F172A; color:white; font-size:11px; font-weight:800; padding:3px 10px; border-radius:20px; }
 
 /* Sep */
-.fs-sep { border:none; border-top:1.5px solid #EDF2F7; margin:16px 0; }
+.fs-sep { border:none; border-top:1.5px solid #F1F5F9; margin:24px 0; }
 
 /* Upgrade */
-.upgrade-cta { background:linear-gradient(135deg,#1A1A2E 0%,#2D3748 100%); border-radius:20px; padding:24px; color:white; text-align:center; margin:16px 0; }
+.upgrade-cta { background:linear-gradient(135deg,#0F172A 0%,#1E293B 100%); border-radius:24px; padding:32px; color:white; text-align:center; margin:20px 0; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.2); }
 
 /* Contract list card */
-.contract-list-card { background:white; border-radius:16px; padding:16px 18px; margin-bottom:14px; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+.contract-list-card { background:white; border-radius:20px; padding:20px; margin-bottom:16px; box-shadow:0 4px 12px rgba(0,0,0,0.03); border: 1px solid #F1F5F9; }
 
 /* Buttons */
 div.stButton > button {
-    width:100%; border-radius:14px !important; font-weight:700 !important;
-    font-family:'Noto Sans JP',sans-serif !important; font-size:14px !important;
-    padding:12px 8px !important; border:none !important;
-    transition:all .2s !important; white-space:nowrap;
+    width:100%; border-radius:18px !important; font-weight:800 !important;
+    font-family:'Inter', sans-serif !important; font-size:15px !important;
+    padding:16px 12px !important; border:none !important;
+    transition:all .25s cubic-bezier(0.2, 1, 0.3, 1) !important; white-space:nowrap;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
-div.stButton > button:first-child { background:#1A1A2E !important; color:white !important; }
-div.stButton > button:first-child:hover { background:#2D3748 !important; transform:translateY(-1px) !important; box-shadow:0 4px 12px rgba(0,0,0,.2) !important; }
+div.stButton > button:first-child { background:#1E293B !important; color:white !important; }
+div.stButton > button:first-child:hover { background:#0F172A !important; transform:translateY(-2px) !important; box-shadow:0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important; }
+div.stButton > button:active { transform: translateY(0px) !important; }
+
+/* Large Primary Button */
+div.stButton > button[kind="primary"] {
+    background:#10B981 !important; color:white !important;
+    font-size: 22px !important; padding: 24px 16px !important; border-radius: 24px !important;
+    box-shadow: 0 10px 25px rgba(16, 185, 129, 0.2) !important;
+}
+div.stButton > button[kind="primary"]:hover {
+    background:#059669 !important; transform:translateY(-4px) !important;
+    box-shadow: 0 15px 35px rgba(16, 185, 129, 0.3) !important;
+}
 
 /* Inputs */
 div.stTextInput > div > div > input,
 div.stTextArea > div > div > textarea {
-    border-radius:12px !important; border:1.5px solid #E2E8F0 !important;
-    font-family:'Noto Sans JP',sans-serif !important; background:#F7FAFC !important;
+    border-radius:16px !important; border:2px solid #F1F5F9 !important;
+    font-family:'Inter', sans-serif !important; background:#F8FAFC !important;
+    padding: 12px 16px !important;
 }
 div.stTextInput > div > div > input:focus,
 div.stTextArea > div > div > textarea:focus {
-    border-color:#00C48C !important; box-shadow:0 0 0 3px rgba(0,196,140,.15) !important; background:white !important;
+    border-color:#10B981 !important; box-shadow:0 0 0 4px rgba(16, 185, 129, 0.1) !important; background:white !important;
 }
-div.stInfo, div.stSuccess, div.stWarning, div.stError { border-radius:12px !important; }
+div.stInfo, div.stSuccess, div.stWarning, div.stError { border-radius:16px !important; padding: 18px !important; font-weight: 500; }
 
 /* Swipe transition overlays */
 .page-transition-enter { animation: slideInRight .25s cubic-bezier(.22,.61,.36,1); }
 .page-transition-exit  { animation: slideOutLeft .25s cubic-bezier(.22,.61,.36,1); }
 @keyframes slideInRight { from { transform:translateX(100vw); opacity:0; } to { transform:translateX(0); opacity:1; } }
 @keyframes slideOutLeft { from { transform:translateX(0); opacity:1; } to { transform:translateX(-100vw); opacity:0; } }
+/* Custom basic selectbox style (if needed) */
 </style>
 """, unsafe_allow_html=True)
 
@@ -145,23 +160,17 @@ LIMIT_FREE = 3
 LIMIT_PAID = 100
 
 
-def _get_base_url():
-    try:
-        import streamlit.web.server.websocket_headers as wh
-        headers = wh._get_websocket_headers()
-        host = headers.get("Host", "localhost:8501")
-        proto = "https" if "streamlit.app" in host else "http"
-        return f"{proto}://{host}"
-    except Exception:
-        try:
-            return st.secrets.get("BASE_URL", "http://localhost:8501")
-        except Exception:
-            return "http://localhost:8501"
-
-
 def get_base_url():
     if "base_url" not in st.session_state:
-        st.session_state.base_url = _get_base_url()
+        try:
+            host = st.context.headers.get("Host", "localhost:8501")
+            proto = "https" if "streamlit.app" in host else "http"
+            st.session_state.base_url = f"{proto}://{host}"
+        except Exception:
+            try:
+                st.session_state.base_url = st.secrets.get("BASE_URL", "http://localhost:8501")
+            except Exception:
+                st.session_state.base_url = "http://localhost:8501"
     return st.session_state.base_url
 
 
@@ -195,7 +204,7 @@ def render_nav(user=None):
         name_html = f'<div class="fs-chip">👤 {user["display_name"]}</div>'
     st.markdown(
         f'<div class="fs-nav"><div class="fs-logo">Fit<span>Sign</span></div>'
-        f'<div style="display:flex;align-items:center;gap:8px;">{name_html}{plan_html}</div></div>',
+        f'<div style="display:flex;align-items:center;gap:12px;">{name_html}{plan_html}</div></div>',
         unsafe_allow_html=True,
     )
 
@@ -215,24 +224,30 @@ def render_limit_bar(user):
 
 
 # ──────────────────────────────────────────────
-# Single Drum Picker – 0〜100万 円 (1万刻み) + 1000円刻み微調整
+# Single Drum Picker – 0〜100万 円 (より分かりやすく)
 # ──────────────────────────────────────────────
-AMOUNT_OPTIONS = (
-    ["0円"] +
-    [f"{i}千円" for i in range(1, 10)] +
-    [f"{i}万円" for i in range(1, 101)]
-)
+AMOUNT_OPTIONS = [
+    "3,000円", "5,000円", "1万円", "3万円", "5万円", 
+    "10万円", "30万円", "50万円", "100万円", "任意入力（手入力）"
+]
 
-AMOUNT_VALUES = (
-    [0] +
-    [i * 1000 for i in range(1, 10)] +
-    [i * 10000 for i in range(1, 101)]
-)
+CONTENT_OPTIONS = [
+    "ウェブサイトのデザイン制作",
+    "システム開発・保守案",
+    "SNS運用代行・記事制作",
+    "ロゴ・バナー作成",
+    "動画編集・映像制作",
+    "ライティング・文章執筆",
+    "プログラミング講師・指導",
+    "イベント企画・運営補助",
+    "写真撮影・レタッチ",
+    "任意入力（手入力）"
+]
 
 
-def amount_drum(default_index: int = 0) -> int:
-    """Render single iOS-style drum for amount. Returns selected amount in yen."""
-    key = "amount_drum"
+def amount_drum(default_index: int = 0) -> str:
+    """Render single iOS-style drum for amount. Returns selected label."""
+    key = "amount_drum_idx"
     if key not in st.session_state:
         st.session_state[key] = default_index
 
@@ -240,129 +255,16 @@ def amount_drum(default_index: int = 0) -> int:
     init_idx = st.session_state[key]
     opts_js = "[" + ",".join(f'"{o}"' for o in opts) + "]"
 
-    html = f"""
-<style>
-.drum-wrap {{
-  position:relative; height:200px; overflow:hidden;
-  border-radius:16px; background:#F7FAFC; border:1.5px solid #E2E8F0;
-  user-select:none; touch-action:none;
-}}
-.drum-mask-top,.drum-mask-bot {{
-  position:absolute; left:0; right:0; height:68px; z-index:2; pointer-events:none;
-}}
-.drum-mask-top {{ top:0; background:linear-gradient(to bottom,#F7FAFC 40%,transparent); }}
-.drum-mask-bot {{ bottom:0; background:linear-gradient(to top,#F7FAFC 40%,transparent); }}
-.drum-sel {{
-  position:absolute; top:50%; left:12px; right:12px;
-  transform:translateY(-50%); height:52px;
-  border-radius:12px; background:rgba(0,196,140,.12);
-  border:1.5px solid rgba(0,196,140,.5); z-index:1; pointer-events:none;
-}}
-.drum-list {{ position:absolute; width:100%; will-change:transform; cursor:grab; }}
-.drum-list:active {{ cursor:grabbing; }}
-.drum-item {{
-  height:52px; display:flex; align-items:center; justify-content:center;
-  font-size:18px; font-weight:700; color:#1A1A2E; font-family:'Noto Sans JP',sans-serif;
-}}
-</style>
-<div class="drum-wrap" id="drum-wrap">
-  <div class="drum-mask-top"></div>
-  <div class="drum-sel"></div>
-  <div class="drum-list" id="drum-list"></div>
-  <div class="drum-mask-bot"></div>
-</div>
-<input type="hidden" id="drum-out" value="{init_idx}">
-<script>
-(function(){{
-  const OPTS = {opts_js};
-  const ITEM_H = 52;
-  const PAD = 2;
-  const list = document.getElementById('drum-list');
-  const out  = document.getElementById('drum-out');
-  let idx = {init_idx};
-  let startY = 0, baseOffset = 0, isDragging = false;
+def amount_drum(default_index: int = 0) -> str:
+    """Render single iOS-style drum for amount. Returns selected label."""
+    key = "amount_drum_idx"
+    if key not in st.session_state:
+        st.session_state[key] = default_index
 
-  const allItems = [...Array(PAD).fill(''), ...OPTS, ...Array(PAD).fill('')];
-  allItems.forEach(o => {{
-    const d = document.createElement('div');
-    d.className = 'drum-item';
-    d.textContent = o;
-    list.appendChild(d);
-  }});
+    selected_label = st.selectbox("金額を選択", options=AMOUNT_OPTIONS, index=st.session_state[key], key="amount_sel_box")
+    return selected_label
 
-  function getOffset(i) {{
-    return -((i + PAD) * ITEM_H - 74);
-  }}
-
-  function snap(i, animate) {{
-    idx = Math.max(0, Math.min(OPTS.length - 1, i));
-    list.style.transition = animate ? 'transform .2s cubic-bezier(.22,.61,.36,1)' : 'none';
-    list.style.transform = 'translateY(' + getOffset(idx) + 'px)';
-    out.value = idx;
-  }}
-
-  snap({init_idx}, false);
-
-  const wrap = document.getElementById('drum-wrap');
-
-  // Touch
-  wrap.addEventListener('touchstart', e => {{
-    isDragging = true;
-    startY = e.touches[0].clientY;
-    baseOffset = getOffset(idx);
-    list.style.transition = 'none';
-    e.preventDefault();
-  }}, {{passive:false}});
-  wrap.addEventListener('touchmove', e => {{
-    if (!isDragging) return;
-    const dy = e.touches[0].clientY - startY;
-    list.style.transform = 'translateY(' + (baseOffset + dy) + 'px)';
-    e.preventDefault();
-  }}, {{passive:false}});
-  wrap.addEventListener('touchend', e => {{
-    if (!isDragging) return;
-    isDragging = false;
-    const dy = e.changedTouches[0].clientY - startY;
-    snap(idx - Math.round(dy / ITEM_H), true);
-  }});
-
-  // Mouse
-  wrap.addEventListener('mousedown', e => {{
-    isDragging = true;
-    startY = e.clientY;
-    baseOffset = getOffset(idx);
-    list.style.transition = 'none';
-  }});
-  document.addEventListener('mousemove', e => {{
-    if (!isDragging) return;
-    const dy = e.clientY - startY;
-    list.style.transform = 'translateY(' + (baseOffset + dy) + 'px)';
-  }});
-  document.addEventListener('mouseup', e => {{
-    if (!isDragging) return;
-    isDragging = false;
-    const dy = e.clientY - startY;
-    snap(idx - Math.round(dy / ITEM_H), true);
-  }});
-}})();
-</script>
-"""
-    st.markdown('<div style="font-size:12px;font-weight:700;color:#718096;margin-bottom:6px;letter-spacing:.5px;">金額を選択</div>', unsafe_allow_html=True)
-    components.html(html, height=220)
-
-    # Use selectbox underneath as the actual state holder
-    selected_label = st.selectbox(
-        "金額",
-        options=AMOUNT_OPTIONS,
-        index=init_idx,
-        key="amount_sel",
-        label_visibility="collapsed",
-    )
-    sel_idx = AMOUNT_OPTIONS.index(selected_label)
-    return AMOUNT_VALUES[sel_idx]
-
-
-# ──────────────────────────────────────────────
+# Removed date_drum completely as requested.
 # Swipe Navigation Helper
 # ──────────────────────────────────────────────
 def nav_to(page: str):
@@ -407,25 +309,33 @@ def swipe_hint():
 # ──────────────────────────────────────────────
 
 def page_profile(user):
+    from db import save_user_profile
     render_nav(user)
     st.markdown("""
-<div style="text-align:center;padding:32px 0 20px;">
+<div style="text-align:center;padding:12px 0 20px;">
   <div style="font-size:56px;margin-bottom:16px;">👤</div>
-  <div style="font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;color:#1A1A2E;">はじめに</div>
-  <div style="font-size:14px;color:#718096;margin-top:8px;">お名前を登録するとスムーズに使えます</div>
+  <div style="font-family:'Inter', sans-serif;font-size:28px;font-weight:900;color:#0F172A;letter-spacing:-0.04em;">あなたの情報</div>
+  <div style="font-size:14px;color:#64748B;margin-top:8px;font-weight:500;">契約書に記載されるあなたの情報を入力してください</div>
 </div>
 """, unsafe_allow_html=True)
 
-    current_name = user.get("display_name") or ""
-    new_name = st.text_input("名前（表示名）", value=current_name, placeholder="山田 太郎", key="p_name")
+    with st.container():
+        name = st.text_input("氏名・会社名", value=user.get("display_name", ""), placeholder="山田 太郎 / 株式会社サンプル")
+        address = st.text_input("住所", value=user.get("address", ""), placeholder="東京都渋谷区1-1-1 ...")
+        phone = st.text_input("電話番号", value=user.get("phone", ""), placeholder="090-0000-0000")
+        email = st.text_input("メールアドレス", value=user.get("email", ""), placeholder="yamada@example.com")
 
+    st.markdown("<div style='margin-bottom:24px'></div>", unsafe_allow_html=True)
+    
     col1, col2 = st.columns(2)
     with col1:
         if st.button("✅ 保存してはじめる", key="btn_save_profile"):
-            if new_name.strip():
-                save_display_name(user["id"], new_name.strip())
-            st.session_state.page = "home"
-            st.rerun()
+            if name.strip():
+                save_user_profile(user["id"], name.strip(), address.strip(), phone.strip(), email.strip())
+                st.session_state.page = "home"
+                st.rerun()
+            else:
+                st.error("氏名を入力してください")
     with col2:
         if st.button("→ スキップ", key="btn_skip_profile"):
             st.session_state.page = "home"
@@ -451,17 +361,38 @@ def page_sign(contract_id: str):
         return
 
     st.markdown(f"""
-<div class="fs-card" style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
-  <span style="font-size:32px">{contract.get("template_emoji","📋")}</span>
+<div class="fs-card" style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+  <span style="font-size:40px">{contract.get("template_emoji","📋")}</span>
   <div>
-    <div style="font-weight:700;font-size:18px;color:#1A1A2E;">{contract["template_name"]}</div>
-    <div style="font-size:11px;color:#A0AEC0;">契約ID: {contract["id"]}</div>
+    <div style="font-weight:800;font-size:20px;color:#0F172A;letter-spacing:-0.02em;">{contract["template_name"]}</div>
+    <div style="font-size:12px;color:#64748B;font-weight:600;font-family:monospace;">ID: {contract["id"]}</div>
   </div>
 </div>
 """, unsafe_allow_html=True)
 
+    creator = get_user(contract["creator_id"])
+    if creator:
+        st.markdown(f"""
+<div class="fs-card" style="background:#F8FAFC; border:1px solid #E2E8F0;">
+  <div style="font-size:11px;font-weight:800;color:#64748B;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px;">委託者（依頼者）情報</div>
+  <div style="display:grid;grid-template-columns:50px 1fr;gap:8px;font-size:13px;line-height:1.5;">
+    <div style="color:#64748B;font-weight:600;">氏名</div><div style="font-weight:800;color:#0F172A;">{creator.get("display_name") or "未登録"}</div>
+    <div style="color:#64748B;font-weight:600;">住所</div><div style="color:#334155;">{creator.get("address") or "-"}</div>
+    <div style="color:#64748B;font-weight:600;">電話</div><div style="color:#334155;">{creator.get("phone") or "-"}</div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
+
+    creator = get_user(contract["creator_id"])
+    creator_name = creator.get("display_name") or "未登録" if creator else "未登録"
+    signer_name = st.session_state.get("sign_done") or "（受託者）"
+
     body = contract["template_body"].format(
-        content=contract["content"], amount=contract["amount"], contract_date=contract["contract_date"]
+        content=contract["content"], 
+        amount=contract["amount"], 
+        contract_date=contract["contract_date"],
+        creator_name=creator_name,
+        signer_name=signer_name
     )
     st.markdown(f'<div class="contract-body">{body}</div>', unsafe_allow_html=True)
     st.markdown('<hr class="fs-sep">', unsafe_allow_html=True)
@@ -514,14 +445,16 @@ def page_home(user):
     greeting = f"{name}さん、" if name else ""
     st.markdown(f'<div class="fs-hero"><h1>{greeting}30秒で<br><span>契約</span>できる</h1><p>テンプレ選んで入力するだけ。QRコードで相手が署名。</p></div>', unsafe_allow_html=True)
 
+    # Custom HTML for clickable cards
+    # Standard Streamlit buttons for clean, functional operation
     col1, col2 = st.columns(2)
     with col1:
-        st.markdown('<div class="fs-card" style="text-align:center;min-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;"><div style="font-size:36px;margin-bottom:8px;">✍️</div><div style="font-weight:700;font-size:14px;color:#1A1A2E;">契約を作る</div><div style="font-size:11px;color:#A0AEC0;margin-top:2px;">新規作成</div></div>', unsafe_allow_html=True)
-        if st.button("契約を作る", key="btn_create"):
+        st.markdown('<div style="text-align:center;font-size:40px;margin-bottom:8px;">✍️</div>', unsafe_allow_html=True)
+        if st.button("契約を書く", use_container_width=True, key="btn_create", type="primary"):
             nav_to("create")
     with col2:
-        st.markdown('<div class="fs-card" style="text-align:center;min-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;"><div style="font-size:36px;margin-bottom:8px;">📋</div><div style="font-weight:700;font-size:14px;color:#1A1A2E;">契約一覧</div><div style="font-size:11px;color:#A0AEC0;margin-top:2px;">作成した契約</div></div>', unsafe_allow_html=True)
-        if st.button("契約一覧", key="btn_list"):
+        st.markdown('<div style="text-align:center;font-size:40px;margin-bottom:8px;">📋</div>', unsafe_allow_html=True)
+        if st.button("契約一覧", use_container_width=True, key="btn_list"):
             nav_to("list")
 
     render_limit_bar(user)
@@ -538,6 +471,19 @@ def page_home(user):
     with col_p:
         if st.button("👤 プロフィール設定"):
             nav_to("profile")
+
+    st.markdown('<div style="margin-top:40px;padding-top:20px;border-top:1px solid #E2E8F0;text-align:center;">', unsafe_allow_html=True)
+    f_col1, f_col2, f_col3 = st.columns(3)
+    with f_col1:
+        if st.button("利用規約", key="btn_tos", use_container_width=True):
+            nav_to("tos")
+    with f_col2:
+        if st.button("プライバシー", key="btn_privacy", use_container_width=True):
+            nav_to("privacy")
+    with f_col3:
+        if st.button("特商法表記", key="btn_law", use_container_width=True):
+            nav_to("law")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 
 def page_create(user):
@@ -561,29 +507,48 @@ def page_create(user):
     for tmpl in templates:
         is_selected = selected_tmpl and selected_tmpl["id"] == tmpl["id"]
         sel_class = " selected" if is_selected else ""
-        st.markdown(f'<div class="tmpl-card{sel_class}"><span style="font-size:28px">{tmpl["emoji"]}</span><div><div style="font-weight:700;font-size:15px;color:#1A1A2E;">{tmpl["name"]}</div><div style="font-size:12px;color:#718096;margin-top:2px;">{tmpl["description"]}</div></div></div>', unsafe_allow_html=True)
-        _lbl = "✅ 選択中" if is_selected else ("選択：" + tmpl["name"])
-        if st.button(_lbl, key=f"tmpl_{tmpl['id']}"):
+        
+        lbl = f"{tmpl['emoji']} {tmpl['name']}"
+        if is_selected:
+            lbl = f"✅ {tmpl['name']} (選択中)"
+
+        if st.button(lbl, key=f"tmpl_btn_{tmpl['id']}", type="primary" if is_selected else "secondary", use_container_width=True):
             st.session_state.selected_template = tmpl
             st.rerun()
+        
+        st.markdown(f'<div style="font-size:12px;color:#64748B;text-align:center;margin-top:-10px;margin-bottom:12px;">{tmpl["description"]}</div>', unsafe_allow_html=True)
+
 
     st.markdown("<br>", unsafe_allow_html=True)
     if not selected_tmpl:
-        st.info("テンプレートを選択してください")
+        st.info("上の枠をタップしてテンプレートを選択してください")
         if st.button("← 戻る"):
             nav_back("home")
         return
 
     st.markdown('<hr class="fs-sep">', unsafe_allow_html=True)
-    st.markdown("**② 業務内容を入力**")
-    content = st.text_input("業務内容", placeholder="ウェブサイトのデザイン制作")
-    contract_date = st.date_input("日付")
+    st.markdown("**② 業務内容**")
+    # Simplified Content Input
+    sample_content = st.selectbox("サンプルの内容", options=CONTENT_OPTIONS, index=0)
+    if sample_content == "任意入力（手入力）":
+        content = st.text_input("内容を入力", placeholder="例: ウェブサイト制作")
+    else:
+        content = sample_content
+        st.info(f"選択中: {content}")
 
     st.markdown('<hr class="fs-sep">', unsafe_allow_html=True)
-    st.markdown("**③ 金額を選択**")
-    amount_yen = amount_drum()
-    st.markdown(f'<div class="fs-card" style="text-align:center;padding:14px;">💰 <strong style="font-size:18px;">{amount_yen:,}円</strong></div>', unsafe_allow_html=True)
-    manual_override = st.text_input("または金額を直接入力（任意）", placeholder="例: 123,456", key="manual_amt")
+    st.markdown("**③ 報酬金額**")
+    sample_amount = amount_drum() # unified drum
+    if sample_amount == "任意入力（手入力）":
+        final_amt_str = st.text_input("金額を入力（円）", placeholder="例: 123,456")
+    else:
+        final_amt_str = sample_amount
+        st.markdown(f'<div class="fs-card" style="text-align:center;padding:14px;background:#ECFDF5;border-color:#10B981;">💰 <strong style="font-size:18px;color:#065F46;">{final_amt_str}</strong></div>', unsafe_allow_html=True)
+
+    st.markdown('<hr class="fs-sep">', unsafe_allow_html=True)
+    st.markdown("**④ 契約日**")
+    dt = st.date_input("日付を選択", label_visibility="collapsed")
+    contract_date = dt.strftime("%Y/%m/%d")
 
     st.markdown('<hr class="fs-sep">', unsafe_allow_html=True)
     col1, col2 = st.columns(2)
@@ -591,16 +556,15 @@ def page_create(user):
         if st.button("← 戻る", key="btn_back_create"):
             nav_back("home")
     with col2:
-        if st.button("作成する →"):
+        if st.button("作成する →", type="primary"):
             if not content.strip():
                 st.error("内容を入力してください")
             else:
-                final_amount = manual_override.strip() if manual_override.strip() else f"{amount_yen:,}"
                 contract_id = create_contract(
                     creator_id=user["id"],
                     template_id=selected_tmpl["id"],
                     content=content.strip(),
-                    amount=final_amount,
+                    amount=final_amt_str.strip(),
                     contract_date=str(contract_date),
                 )
                 st.session_state.created_contract_id = contract_id
@@ -630,10 +594,41 @@ def page_qr(user):
     qr_b64 = generate_qr(sign_url)
     st.markdown(f'<div class="qr-box"><div style="font-size:13px;color:#718096;margin-bottom:16px;">相手のスマホで読み取る</div><img src="data:image/png;base64,{qr_b64}" width="220"><div style="font-size:11px;color:#A0AEC0;margin-top:12px;">契約ID: {contract_id}</div></div>', unsafe_allow_html=True)
 
-    st.text_input("署名URL（コピーして送れます）", value=sign_url, disabled=True)
+    st.markdown("**署名URL（ワンクリックでコピー）**")
+    copy_html = f"""
+    <div style="display:flex; gap:8px;">
+        <input type="text" id="url" value="{sign_url}" readonly style="flex-grow:1; padding:12px; border-radius:12px; border:2px solid #E2E8F0; font-family:monospace; background:#F8FAFC; color:#334155; font-size:14px; outline:none;">
+        <button onclick="copyToClipboard()" style="padding:12px 20px; background:#10B981; color:white; border:none; border-radius:12px; font-weight:800; font-size:15px; cursor:pointer; white-space:nowrap; box-shadow:0 4px 6px -1px rgba(16,185,129,0.2);">📋 コピー</button>
+    </div>
+    <div id="msg" style="color:#059669; font-weight:bold; font-size:13px; margin-top:6px; height:16px; margin-left:4px;"></div>
+    <script>
+    function copyToClipboard() {{
+        var copyText = document.getElementById("url");
+        copyText.select();
+        copyText.setSelectionRange(0, 99999);
+        try {{
+            document.execCommand("copy");
+            document.getElementById("msg").innerText = "✔ コピーしました！";
+            setTimeout(() => document.getElementById("msg").innerText = "", 2500);
+        }} catch (err) {{
+            document.getElementById("msg").innerText = "コピーに失敗しました";
+        }}
+    }}
+    </script>
+    """
+    components.html(copy_html, height=80)
 
     with st.expander("契約内容を確認"):
-        body = contract["template_body"].format(content=contract["content"], amount=contract["amount"], contract_date=contract["contract_date"])
+        creator = get_user(contract["creator_id"])
+        creator_name = creator.get("display_name") or "未登録" if creator else "未登録"
+        signer_name = contract.get("signer_name") or "（受託者）"
+        body = contract["template_body"].format(
+            content=contract["content"], 
+            amount=contract["amount"], 
+            contract_date=contract["contract_date"],
+            creator_name=creator_name,
+            signer_name=signer_name
+        )
         st.markdown(f'<div class="contract-body">{body}</div>', unsafe_allow_html=True)
 
     if st.button("🔄 署名状況を確認"):
@@ -734,7 +729,16 @@ def page_detail(user):
 
     st.markdown(f'<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;"><span style="font-size:28px">{contract.get("template_emoji","📋")}</span><div><div style="font-weight:700;font-size:18px;color:#1A1A2E;">{contract["template_name"]} {badge}</div><div style="font-size:12px;color:#A0AEC0;">契約ID: {contract["id"]}</div></div></div>', unsafe_allow_html=True)
 
-    body = contract["template_body"].format(content=contract["content"], amount=contract["amount"], contract_date=contract["contract_date"])
+    creator = get_user(contract["creator_id"])
+    creator_name = creator.get("display_name") or "未登録" if creator else "未登録"
+    signer_name = contract.get("signer_name") or "（受託者）"
+    body = contract["template_body"].format(
+        content=contract["content"], 
+        amount=contract["amount"], 
+        contract_date=contract["contract_date"],
+        creator_name=creator_name,
+        signer_name=signer_name
+    )
     st.markdown(f'<div class="contract-body">{body}</div>', unsafe_allow_html=True)
 
     if status == "signed":
@@ -757,6 +761,30 @@ def page_detail(user):
     if st.button("← 一覧に戻る"):
         nav_back("list")
 
+def page_tos(user):
+    swipe_hint()
+    render_nav(user)
+    st.markdown("## 利用規約")
+    st.markdown("本サービスの利用規約は現在準備中です。")
+    if st.button("← ホームに戻る"):
+        nav_back("home")
+
+def page_privacy(user):
+    swipe_hint()
+    render_nav(user)
+    st.markdown("## プライバシーポリシー")
+    st.markdown("本サービスのプライバシーポリシーは現在準備中です。")
+    if st.button("← ホームに戻る"):
+        nav_back("home")
+
+def page_law(user):
+    swipe_hint()
+    render_nav(user)
+    st.markdown("## 特定商取引法に基づく表記")
+    st.markdown("本サービスの特定商取引法に基づく表記は現在準備中です。")
+    if st.button("← ホームに戻る"):
+        nav_back("home")
+
 
 # ──────────────────────────────────────────────
 # Router
@@ -764,20 +792,17 @@ def page_detail(user):
 
 def main():
     params = st.query_params
-    page_param = params.get("page", "")
-    contract_id_param = params.get("id", "")
-
-    if page_param == "sign" and contract_id_param:
-        page_sign(contract_id_param)
-        return
-
     user_id = get_user_id()
     user = get_or_create_user(user_id)
 
-    if "page" not in st.session_state:
-        st.session_state.page = "profile" if not user.get("display_name") else "home"
+    page = st.session_state.get("page", "")
+    if "page" in st.query_params:
+        page = st.query_params["page"]
+        if page == "sign":
+            contract_id_param = st.query_params.get("id", "")
+            page_sign(contract_id_param)
+            return
 
-    page = st.session_state.page
     if page == "home":
         page_home(user)
     elif page == "profile":
@@ -790,8 +815,15 @@ def main():
         page_list(user)
     elif page == "detail":
         page_detail(user)
+    elif page == "tos":
+        page_tos(user)
+    elif page == "privacy":
+        page_privacy(user)
+    elif page == "law":
+        page_law(user)
     else:
-        st.session_state.page = "home"
+        # Default page if not found or session state is empty
+        st.session_state.page = "profile" if not user.get("display_name") else "home"
         st.rerun()
 
 

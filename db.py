@@ -23,7 +23,10 @@ def init_db():
         created_at DATETIME,
         plan TEXT DEFAULT 'free',
         contract_count INTEGER DEFAULT 0,
-        display_name TEXT DEFAULT ''
+        display_name TEXT DEFAULT '',
+        address TEXT DEFAULT '',
+        phone TEXT DEFAULT '',
+        email TEXT DEFAULT ''
     )
     """)
 
@@ -68,8 +71,11 @@ def init_db():
 本日、以下の内容について委託者と受託者は合意しました。
 
 ■ 業務内容：{content}
-■ 報酬金額：{amount}円
+■ 報酬金額：{amount}
 ■ 契約日：{contract_date}
+
+【甲】（委託者）：{creator_name}
+【乙】（受託者）：{signer_name}
 
 受託者は上記業務を誠実に遂行し、委託者は定められた報酬を支払うことを約束します。
 詳細な条件については利用規約に準じます。
@@ -86,8 +92,11 @@ def init_db():
 以下の単発業務について合意します。
 
 ■ 業務内容：{content}
-■ 報酬金額：{amount}円
+■ 報酬金額：{amount}
 ■ 実施日：{contract_date}
+
+【甲】（委託者）：{creator_name}
+【乙】（受託者）：{signer_name}
 
 本合意に基づき、業務完了後速やかに報酬をお支払いいただきます。
 
@@ -106,6 +115,9 @@ def init_db():
 ■ 条件：{amount}
 ■ 日付：{contract_date}
 
+【甲】（同意受領者）：{creator_name}
+【乙】（同意者）：{signer_name}
+
 本同意書に記載の内容を十分に理解した上で、自らの意思で同意します。
 
 上記内容について双方合意しました。""",
@@ -123,6 +135,9 @@ def init_db():
     # Safe migrations - silently add columns if they don't exist
     for sql in [
         "ALTER TABLE users ADD COLUMN display_name TEXT DEFAULT ''",
+        "ALTER TABLE users ADD COLUMN address TEXT DEFAULT ''",
+        "ALTER TABLE users ADD COLUMN phone TEXT DEFAULT ''",
+        "ALTER TABLE users ADD COLUMN email TEXT DEFAULT ''",
         "ALTER TABLE contracts ADD COLUMN rejection_reason TEXT",
     ]:
         try:
@@ -134,10 +149,13 @@ def init_db():
     conn.close()
 
 
-def save_display_name(user_id, name):
+def save_user_profile(user_id, name, address, phone, email):
     conn = get_conn()
     c = conn.cursor()
-    c.execute("UPDATE users SET display_name = ? WHERE id = ?", (name, user_id))
+    c.execute(
+        "UPDATE users SET display_name = ?, address = ?, phone = ?, email = ? WHERE id = ?",
+        (name, address, phone, email, user_id),
+    )
     conn.commit()
     conn.close()
 

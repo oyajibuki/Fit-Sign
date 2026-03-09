@@ -6,7 +6,7 @@ from reportlab.lib.styles import ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable, Table, TableStyle
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.cidfonts import UnicodeCIDFont
-
+from db import get_user
 
 def _register_fonts():
     try:
@@ -88,10 +88,17 @@ def generate_pdf(contract: dict) -> BytesIO:
 
     # Contract body
     body_template = contract.get("template_body", "")
+    
+    creator = get_user(contract.get("creator_id"))
+    creator_name = creator.get("display_name") or "未登録" if creator else "未登録"
+    signer_name = contract.get("signer_name") or "（受託者）"
+    
     body_text = body_template.format(
         content=contract.get("content", ""),
         amount=contract.get("amount", ""),
         contract_date=contract.get("contract_date", ""),
+        creator_name=creator_name,
+        signer_name=signer_name,
     )
     for line in body_text.split("\n"):
         story.append(Paragraph(line if line.strip() else "&nbsp;", body_style))
