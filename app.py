@@ -845,8 +845,8 @@ def page_law(user):
 <table style="width:100%; border-collapse: collapse; font-size:13px;">
   <tr><td style="padding:10px 0; border-bottom:1px solid #F1F5F9; font-weight:bold; width:38%; vertical-align:top;">販売業者</td><td style="padding:10px 0; border-bottom:1px solid #F1F5F9;">Fit-Sign</td></tr>
   <tr><td style="padding:10px 0; border-bottom:1px solid #F1F5F9; font-weight:bold; vertical-align:top;">代表責任者</td><td style="padding:10px 0; border-bottom:1px solid #F1F5F9;">関 順子</td></tr>
-  <tr><td style="padding:10px 0; border-bottom:1px solid #F1F5F9; font-weight:bold; vertical-align:top;">所在地</td><td style="padding:10px 0; border-bottom:1px solid #F1F5F9;">〒418-0108<br>静岡県富士宮市猪之頭字内野941-35</td></tr>
-  <tr><td style="padding:10px 0; border-bottom:1px solid #F1F5F9; font-weight:bold; vertical-align:top;">連絡先</td><td style="padding:10px 0; border-bottom:1px solid #F1F5F9;">メール: oyajibuki@gmail.com<br>電話: 080-3733-4880<br><span style="font-size:12px; color:#64748B;">※お問い合わせは原則メールにて承っております</span></td></tr>
+  <tr><td style="padding:10px 0; border-bottom:1px solid #F1F5F9; font-weight:bold; vertical-align:top;">所在地</td><td style="padding:10px 0; border-bottom:1px solid #F1F5F9;">静岡県富士宮市</td></tr>
+  <tr><td style="padding:10px 0; border-bottom:1px solid #F1F5F9; font-weight:bold; vertical-align:top;">連絡先</td><td style="padding:10px 0; border-bottom:1px solid #F1F5F9;">メール: oyajibuki@gmail.com<br><span style="font-size:12px; color:#64748B;">※お問い合わせは原則メールにて承っております</span></td></tr>
   <tr><td style="padding:10px 0; border-bottom:1px solid #F1F5F9; font-weight:bold; vertical-align:top;">販売価格</td><td style="padding:10px 0; border-bottom:1px solid #F1F5F9;">現在はすべての機能を無料で提供しているため、該当事項はありません。</td></tr>
   <tr><td style="padding:10px 0; font-weight:bold; vertical-align:top;">必要料金</td><td style="padding:10px 0;">インターネット接続にかかる通信回線等の諸費用は、お客様のご負担となります。</td></tr>
 </table>
