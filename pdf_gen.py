@@ -129,6 +129,14 @@ def generate_pdf(contract: dict) -> BytesIO:
     signer_name = contract.get("signer_name") or "（受託者）"
 
     body_template = contract.get("template_body", "")
+    if "同意書" in contract.get("template_name", ""):
+        c_type = extra.get("consent_type", "")
+        from db import CONSENT_PRIVATE_TEMPLATE, CONSENT_BUSINESS_TEMPLATE
+        if "プライベート" in c_type:
+            body_template = CONSENT_PRIVATE_TEMPLATE
+        else:
+            body_template = CONSENT_BUSINESS_TEMPLATE
+
     try:
         body_text = body_template.format(
             content=content_part,

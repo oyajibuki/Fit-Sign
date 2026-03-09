@@ -541,7 +541,6 @@ def page_create(user):
         return
 
     st.markdown('<hr class="fs-sep">', unsafe_allow_html=True)
-    st.markdown("**② 業務内容**")
 
     # Pick content options dynamically based on template name
     tmpl_name_early = selected_tmpl["name"]
@@ -553,9 +552,16 @@ def page_create(user):
         _content_key = "同意"
     content_opts = CONTENT_OPTIONS_BY_TEMPLATE[_content_key]
 
-    sample_content = st.selectbox("業務内容", options=content_opts, index=0, key="content_select")
+    if _content_key == "同意":
+        st.markdown("**② 対象事項・概要**")
+        sample_content = st.selectbox("対象事項・概要", options=content_opts, index=0, key="content_select")
+    else:
+        st.markdown("**② 業務内容**")
+        sample_content = st.selectbox("業務内容", options=content_opts, index=0, key="content_select")
+
     if sample_content == "任意入力（手入力）":
-        content = st.text_input("内容を入力", placeholder="例: ウェブサイト制作")
+        content = st.text_input("内容を入力", placeholder="例: ウェブサイト制作" if _content_key != "同意" else "例: ルール合意")
+
     else:
         content = sample_content
         st.info(f"選択中: {content}")
@@ -615,9 +621,18 @@ def page_create(user):
 
     # ---- Pattern C: 同意書 ----
     else:  # 同意書 - no amount
+        consent_type = ""
         st.markdown('<hr class="fs-sep">', unsafe_allow_html=True)
-        st.markdown("**③ 同意日**")
+        st.markdown("**③ 同意書の用途を選択**")
+        consent_type = st.radio("用途", [
+            "ビジネス向け（秘密保持・ルール合意など）",
+            "プライベート向け（親密な関係・プライベートな合意など）"
+        ], label_visibility="collapsed")
+
+        st.markdown('<hr class="fs-sep">', unsafe_allow_html=True)
+        st.markdown("**④ 同意日**")
         d_contract = st.date_input("日付を選択", label_visibility="collapsed", key="d_contract")
+
         contract_date = d_contract.strftime("%Y/%m/%d")
         final_amt_str = ""  # 同意書は金額なし
 
@@ -641,6 +656,11 @@ def page_create(user):
                     extra["payment_unit"] = payment_unit
                 if deadline:
                     extra["deadline"] = deadline
+                # consent_type is only defined if we matched Pattern C, so check locals()
+                _ctype = locals().get("consent_type", "")
+                if _ctype:
+                    extra["consent_type"] = _ctype
+
 
                 import json as _json
                 extra_json = _json.dumps(extra, ensure_ascii=False) if extra else ""
@@ -721,7 +741,17 @@ def page_qr(user):
         else:
             disp_content = raw_content
             _xtra = {}
-        body = contract["template_body"].format(
+        if "同意書" in contract.get("template_name", ""):
+            c_type = _xtra.get("consent_type", "")
+            from db import CONSENT_PRIVATE_TEMPLATE, CONSENT_BUSINESS_TEMPLATE
+            if "プライベート" in c_type:
+                tmpl = CONSENT_PRIVATE_TEMPLATE
+            else:
+                tmpl = CONSENT_BUSINESS_TEMPLATE
+        else:
+            tmpl = contract["template_body"]
+
+        body = tmpl.format(
             content=disp_content,
             amount=contract["amount"],
             contract_date=contract["contract_date"],
@@ -732,6 +762,7 @@ def page_qr(user):
             payment_unit=_xtra.get("payment_unit", ""),
             deadline=_xtra.get("deadline", contract["contract_date"]),
         )
+
         st.markdown(f'<div class="contract-body">{body}</div>', unsafe_allow_html=True)
 
 
