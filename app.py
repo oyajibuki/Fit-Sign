@@ -14,7 +14,6 @@ from db import (
     sign_contract,
     reject_contract,
     get_user_contracts,
-    upgrade_to_paid,
     delete_draft_contract,
     save_user_profile,
 )
