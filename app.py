@@ -870,12 +870,6 @@ def page_list(user):
         if st.button("URLを保存"):
             st.session_state.base_url = new_base
             st.success("保存しました")
-        st.markdown("---")
-        if user["plan"] == "free":
-            if st.button("🔓 有料プランに変更（テスト用）"):
-                upgrade_to_paid(user["id"])
-                st.success("変更しました")
-                st.rerun()
 
 
 def page_detail(user):
