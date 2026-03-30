@@ -408,12 +408,37 @@ def page_sign(contract_id: str):
     creator_name = creator.get("display_name") or "未登録" if creator else "未登録"
     signer_name = st.session_state.get("sign_done") or "（受託者）"
 
-    body = contract["template_body"].format(
-        content=contract["content"], 
-        amount=contract["amount"], 
+    raw_content = contract["content"]
+    if "␞" in raw_content:
+        disp_content, _extra_json = raw_content.split("␞", 1)
+        import json as _pj
+        try:
+            _xtra = _pj.loads(_extra_json)
+        except Exception:
+            _xtra = {}
+    else:
+        disp_content = raw_content
+        _xtra = {}
+    if "同意書" in contract.get("template_name", ""):
+        c_type = _xtra.get("consent_type", "")
+        from db import CONSENT_PRIVATE_TEMPLATE, CONSENT_BUSINESS_TEMPLATE
+        if "プライベート" in c_type:
+            tmpl = CONSENT_PRIVATE_TEMPLATE
+        else:
+            tmpl = CONSENT_BUSINESS_TEMPLATE
+    else:
+        tmpl = contract["template_body"]
+
+    body = tmpl.format(
+        content=disp_content,
+        amount=contract["amount"],
         contract_date=contract["contract_date"],
         creator_name=creator_name,
-        signer_name=signer_name
+        signer_name=signer_name,
+        start_date=_xtra.get("start_date", contract["contract_date"]),
+        end_date=_xtra.get("end_date", ""),
+        payment_unit=_xtra.get("payment_unit", ""),
+        deadline=_xtra.get("deadline", contract["contract_date"]),
     )
     st.markdown(f'<div class="contract-body">{body}</div>', unsafe_allow_html=True)
     st.markdown('<hr class="fs-sep">', unsafe_allow_html=True)
@@ -880,12 +905,36 @@ def page_detail(user):
     creator = get_user(contract["creator_id"])
     creator_name = creator.get("display_name") or "未登録" if creator else "未登録"
     signer_name = contract.get("signer_name") or "（受託者）"
-    body = contract["template_body"].format(
-        content=contract["content"], 
-        amount=contract["amount"], 
+    raw_content = contract["content"]
+    if "␞" in raw_content:
+        disp_content, _extra_json = raw_content.split("␞", 1)
+        import json as _pj
+        try:
+            _xtra = _pj.loads(_extra_json)
+        except Exception:
+            _xtra = {}
+    else:
+        disp_content = raw_content
+        _xtra = {}
+    if "同意書" in contract.get("template_name", ""):
+        c_type = _xtra.get("consent_type", "")
+        from db import CONSENT_PRIVATE_TEMPLATE, CONSENT_BUSINESS_TEMPLATE
+        if "プライベート" in c_type:
+            tmpl = CONSENT_PRIVATE_TEMPLATE
+        else:
+            tmpl = CONSENT_BUSINESS_TEMPLATE
+    else:
+        tmpl = contract["template_body"]
+    body = tmpl.format(
+        content=disp_content,
+        amount=contract["amount"],
         contract_date=contract["contract_date"],
         creator_name=creator_name,
-        signer_name=signer_name
+        signer_name=signer_name,
+        start_date=_xtra.get("start_date", contract["contract_date"]),
+        end_date=_xtra.get("end_date", ""),
+        payment_unit=_xtra.get("payment_unit", ""),
+        deadline=_xtra.get("deadline", contract["contract_date"]),
     )
     st.markdown(f'<div class="contract-body">{body}</div>', unsafe_allow_html=True)
 
