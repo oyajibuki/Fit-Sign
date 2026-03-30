@@ -841,7 +841,8 @@ def page_list(user):
                 badge = '<span class="badge-draft">未署名 ⏳</span>'
             info = f"署名者: {c['signer_name']}" if c.get("signer_name") else f"作成: {c['created_at'][:10]}"
             rej = f"<div style='font-size:11px;color:#9B2335;margin-top:4px;'>理由: {c['rejection_reason']}</div>" if c.get("rejection_reason") else ""
-            st.markdown(f'<div class="contract-list-card"><div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;"><div style="display:flex;align-items:center;gap:8px;"><span style="font-size:20px">{c.get("template_emoji","📋")}</span><div><div style="font-weight:700;font-size:14px;color:#1A1A2E;">{c["template_name"]}</div><div style="font-size:11px;color:#A0AEC0;">{c["id"]}</div></div></div>{badge}</div><div style="font-size:13px;color:#4A5568;margin-bottom:4px;">📝 {c["content"][:30]}{"..." if len(c["content"])>30 else ""}</div><div style="font-size:12px;color:#718096;">{info}</div>{rej}</div>', unsafe_allow_html=True)
+            disp_content = c["content"].split("␞")[0]
+            st.markdown(f'<div class="contract-list-card"><div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;"><div style="display:flex;align-items:center;gap:8px;"><span style="font-size:20px">{c.get("template_emoji","📋")}</span><div><div style="font-weight:700;font-size:14px;color:#1A1A2E;">{c["template_name"]}</div><div style="font-size:11px;color:#A0AEC0;">{c["id"]}</div></div></div>{badge}</div><div style="font-size:13px;color:#4A5568;margin-bottom:4px;">📝 {disp_content[:30]}{"..." if len(disp_content)>30 else ""}</div><div style="font-size:12px;color:#718096;">{info}</div>{rej}</div>', unsafe_allow_html=True)
 
             col1, col2 = st.columns([1, 1])
             with col1:
