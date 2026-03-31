@@ -1131,23 +1131,36 @@ def main():
     # ── OAuth コールバック処理 ────────────────────────────
     if "code" in params:
         code = params.get("code", "")
-        # flow_id (fid) を取得
-        flow_id = params.get("fid", "")
+        # flow_id を取得 (Supabase用は fid, LINE用は state パラメータ)
+        flow_id = params.get("fid", params.get("state", ""))
+        
         try:
-            result = exchange_code_for_session(code, flow_id)
-            if result is None or result.user is None:
-                raise ValueError("ユーザー情報の取得に失敗しました。")
-            st.session_state.user_id = result.user.id
-            # アカウント情報を session_state に保存（プロフィール初期値用）
-            meta = result.user.user_metadata or {}
-            st.session_state["google_email"] = result.user.email or ""
-            st.session_state["google_name"] = meta.get("full_name") or meta.get("name") or meta.get("display_name") or ""
+            from db import _pkce_storage, exchange_line_code, exchange_code_for_session
+            storage = _pkce_storage()
+            data = storage.get(flow_id)
+            
+            if data and data.get("type") == "line_direct":
+                # LINE 直接ログインの処理
+                user_info = exchange_line_code(code, flow_id)
+                st.session_state.user_id = user_info["id"]
+                st.session_state["google_name"] = user_info["display_name"]
+                st.session_state["google_email"] = user_info.get("email", "")
+            else:
+                # 標準の Supabase ログイン (Google等)
+                result = exchange_code_for_session(code, flow_id)
+                if result is None or result.user is None:
+                    raise ValueError("ユーザー情報の取得に失敗しました。")
+                st.session_state.user_id = result.user.id
+                # アカウント情報を session_state に保存（プロフィール初期値用）
+                meta = result.user.user_metadata or {}
+                st.session_state["google_email"] = result.user.email or ""
+                st.session_state["google_name"] = meta.get("full_name") or meta.get("name") or meta.get("display_name") or ""
+
             st.session_state.pop("oauth_error", None)
-            st.session_state.pop("auth_urls_v3", None)
             st.query_params.clear()
             st.rerun()
+            
         except Exception as e:
-            # エラーを session_state に保存してから params をクリア → rerun後に表示
             import traceback
             error_detail = f"{str(e)}\n\n{traceback.format_exc()}"
             st.session_state["oauth_error"] = error_detail

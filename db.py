@@ -119,8 +119,89 @@ def get_google_auth_url(redirect_to: str) -> str:
     return get_auth_url("google", redirect_to)
 
 
+import requests
+import uuid
+
 def get_line_auth_url(redirect_to: str) -> str:
-    return get_auth_url("custom:line", redirect_to)
+    """LINEの認可URLを直接生成する（Supabaseを介さない）"""
+    flow_id = str(uuid.uuid4())
+    code_verifier, code_challenge = _generate_pkce()
+    
+    storage = _pkce_storage()
+    storage[flow_id] = {
+        "cv": code_verifier,
+        "ts": time.time(),
+        "type": "line_direct"
+    }
+    
+    line_client_id = st.secrets.get("LINE_CHANNEL_ID", "2009662287")
+    # Streamlit Cloud のベースURLを特定
+    base_url = st.secrets.get("BASE_URL", "https://fit-sign.streamlit.app")
+    redirect_uri = base_url.rstrip("/") + "/"
+    
+    qs = urllib.parse.urlencode({
+        "response_type": "code",
+        "client_id": line_client_id,
+        "redirect_uri": redirect_uri,
+        "state": flow_id,  # fid として state に入れる
+        "scope": "profile openid",
+        "nonce": str(uuid.uuid4()),
+        "code_challenge": code_challenge,
+        "code_challenge_method": "S256",
+    })
+    return f"https://access.line.me/oauth2/v2.1/authorize?{qs}"
+
+
+def exchange_line_code(code: str, flow_id: str):
+    """LINEの認証コードをトークンとプロフィールに交換する"""
+    storage = _pkce_storage()
+    data = storage.get(flow_id)
+    if not data or data.get("type") != "line_direct":
+        raise ValueError("認証セッションが無効です。")
+    
+    cv = data.get("cv", "")
+    line_client_id = st.secrets.get("LINE_CHANNEL_ID")
+    line_client_secret = st.secrets.get("LINE_CHANNEL_SECRET")
+    base_url = st.secrets.get("BASE_URL", "https://fit-sign.streamlit.app")
+    redirect_uri = base_url.rstrip("/") + "/"
+    
+    # 1. Token Exchange
+    res = requests.post("https://api.line.me/oauth2/v2.1/token", data={
+        "grant_type": "authorization_code",
+        "code": code,
+        "redirect_uri": redirect_uri,
+        "client_id": line_client_id,
+        "client_secret": line_client_secret,
+        "code_verifier": cv
+    })
+    res.raise_for_status()
+    tokens = res.json()
+    access_token = tokens.get("access_token")
+    
+    # 2. Get Profile
+    res_prof = requests.get("https://api.line.me/v2/profile", headers={
+        "Authorization": f"Bearer {access_token}"
+    })
+    res_prof.raise_for_status()
+    profile = res_prof.json()
+    
+    line_user_id = profile.get("userId")
+    if not line_user_id:
+        raise ValueError("LINEプロフィールの取得に失敗しました。")
+    
+    # LINE ID から 決定的な UUID を生成して Supabase の ID として使う
+    # これにより、同じ LINE ユーザーなら常に同じ UUID になる
+    ns_line = uuid.UUID("ead04e57-acc3-4f93-b673-f11909a43063") # 固定の名前空間
+    user_uuid = str(uuid.uuid5(ns_line, line_user_id))
+    
+    storage.pop(flow_id, None)
+    
+    return {
+        "id": user_uuid,
+        "display_name": profile.get("displayName"),
+        "picture_url": profile.get("pictureUrl"),
+        "email": "" # LINE profileからは通常emailは返らない
+    }
 
 
 def exchange_code_for_session(code: str, flow_id: str = ""):
