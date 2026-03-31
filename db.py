@@ -86,27 +86,35 @@ def _generate_pkce_pair():
     return code_verifier, code_challenge
 
 
-def get_google_auth_url(redirect_to: str) -> str:
-    """Google OAuth の認証URLを返す。
+def get_auth_url(provider: str, redirect_to: str) -> str:
+    """OAuth の認証URLを返す。
     code_verifier はサーバーサイドキャッシュに保存する。
-    （GoTrue が redirect_to のクエリパラメータを ?code= で上書きするため
-      URL 経由で渡すと消える）
     """
     code_verifier, code_challenge = _generate_pkce_pair()
 
-    # サーバーサイドに保存（URL 経由は GoTrue に上書きされるため不要）
+    # サーバーサイドに保存
     state = _pkce_state()
     state["code_verifier"] = code_verifier
     state["ts"] = time.time()
 
     supabase_url = st.secrets["SUPABASE_URL"].rstrip("/")
     qs = urllib.parse.urlencode({
-        "provider": "google",
+        "provider": provider,
         "redirect_to": redirect_to,
         "code_challenge": code_challenge,
         "code_challenge_method": "s256",
+        # LINE 等で profile 情報を取得するために必要
+        "scope": "openid profile email" if provider == "google" else "openid profile",
     })
     return f"{supabase_url}/auth/v1/authorize?{qs}"
+
+
+def get_google_auth_url(redirect_to: str) -> str:
+    return get_auth_url("google", redirect_to)
+
+
+def get_line_auth_url(redirect_to: str) -> str:
+    return get_auth_url("line", redirect_to)
 
 
 def exchange_code_for_session(code: str, code_verifier: str = ""):
