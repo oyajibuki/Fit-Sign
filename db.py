@@ -136,9 +136,9 @@ def get_line_auth_url(redirect_to: str) -> str:
     }
     
     line_client_id = st.secrets.get("LINE_CHANNEL_ID", "2009662287")
-    # Streamlit Cloud のベースURLを特定
-    base_url = st.secrets.get("BASE_URL", "https://fit-sign.streamlit.app")
-    redirect_uri = base_url.rstrip("/") + "/"
+    # Streamlit Cloud のベースURLを特定 (末尾スラッシュなしを標準とする)
+    base_url = st.secrets.get("BASE_URL", "https://fit-sign.streamlit.app").rstrip("/")
+    redirect_uri = base_url
     
     qs = urllib.parse.urlencode({
         "response_type": "code",
@@ -163,8 +163,8 @@ def exchange_line_code(code: str, flow_id: str):
     cv = data.get("cv", "")
     line_client_id = st.secrets.get("LINE_CHANNEL_ID")
     line_client_secret = st.secrets.get("LINE_CHANNEL_SECRET")
-    base_url = st.secrets.get("BASE_URL", "https://fit-sign.streamlit.app")
-    redirect_uri = base_url.rstrip("/") + "/"
+    base_url = st.secrets.get("BASE_URL", "https://fit-sign.streamlit.app").rstrip("/")
+    redirect_uri = base_url
     
     # 1. Token Exchange
     res = requests.post("https://api.line.me/oauth2/v2.1/token", data={
