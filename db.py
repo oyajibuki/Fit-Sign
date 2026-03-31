@@ -99,7 +99,7 @@ def get_google_auth_url(redirect_to: str) -> str:
     state["code_verifier"] = code_verifier
     state["ts"] = time.time()
 
-    supabase_url = st.secrets["SUPABASE_URL"]
+    supabase_url = st.secrets["SUPABASE_URL"].rstrip("/")
     qs = urllib.parse.urlencode({
         "provider": "google",
         "redirect_to": redirect_to,
