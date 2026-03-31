@@ -155,19 +155,30 @@ def sign_out():
 # ============================================================
 #  ユーザー
 # ============================================================
-def get_or_create_user(user_id: str) -> dict:
+def get_or_create_user(user_id: str, metadata: dict = None) -> dict:
+    """ユーザーを取得、存在しなければ作成する。
+    metadata: {'email': ..., 'display_name': ...}
+    """
     sb = get_supabase()
     res = sb.table("users").select("*").eq("id", user_id).execute()
     if res.data:
+        # 既に存在する場合、必要に応じて更新（またはそのまま返す）
         return res.data[0]
+    
+    # 新規作成
     now = datetime.now(timezone.utc).isoformat()
+    email = metadata.get("email", "") if metadata else ""
+    name = metadata.get("display_name", "") if metadata else ""
+    
     sb.table("users").insert({
         "id": user_id,
         "created_at": now,
         "plan": "free",
         "contract_count": 0,
-        "display_name": "",
+        "display_name": name,
+        "email": email,
     }).execute()
+    
     res = sb.table("users").select("*").eq("id", user_id).execute()
     return res.data[0]
 
