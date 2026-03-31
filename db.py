@@ -76,7 +76,7 @@ def get_or_create_user(user_id: str) -> dict:
     return res.data[0]
 
 
-def get_user(user_id: str) -> dict | None:
+def get_user(user_id: str):
     sb = get_supabase()
     res = sb.table("users").select("*").eq("id", user_id).execute()
     return res.data[0] if res.data else None
@@ -95,7 +95,7 @@ def save_user_profile(user_id: str, name: str, address: str, phone: str, email: 
 # ============================================================
 #  テンプレート
 # ============================================================
-def get_templates(plan: str = "free") -> list[dict]:
+def get_templates(plan: str = "free") -> list:
     sb = get_supabase()
     if plan == "paid":
         res = sb.table("templates").select("*").execute()
@@ -143,7 +143,7 @@ def create_contract(
     return contract_id
 
 
-def get_contract(contract_id: str) -> dict | None:
+def get_contract(contract_id: str):
     sb = get_supabase()
     # contracts と templates を結合して取得
     res = sb.table("contracts").select(
@@ -159,7 +159,7 @@ def get_contract(contract_id: str) -> dict | None:
     return row
 
 
-def get_user_contracts(user_id: str) -> list[dict]:
+def get_user_contracts(user_id: str) -> list:
     sb = get_supabase()
     res = sb.table("contracts").select(
         "*, templates(name, emoji)"
