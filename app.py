@@ -211,33 +211,34 @@ def page_login():
         }
     urls = st.session_state["auth_urls_v3"]
 
-    # 同一タブ遷移を確実にするため、JavaScript による window.top.location 遷移を行う
     st.markdown(f"""
 <div style="display:flex;flex-direction:column;align-items:center;gap:16px;margin-top:-80px;">
   <!-- LINE Login -->
-  <button onclick="window.top.location.href='{urls['line']}'" 
-          style="display:flex;align-items:center;justify-content:center;gap:12px;background:#06C755;
-                 border:none;border-radius:16px;padding:12px;font-size:15px;font-weight:700;color:white;
-                 box-shadow:0 4px 12px rgba(6,199,85,0.25);cursor:pointer;width:240px;height:48px;">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M24 10.304c0-4.505-5.383-8.17-12-8.17s-12 3.665-12 8.17c0 4.035 4.27 7.42 10.04 8.045.39.085.92.258 1.05.592.12.308.08.79.04 1.103l-.17 1.034c-.05.313-.25 1.225 1.07.67 1.32-.555 7.14-4.2 9.74-7.19 1.48-1.78 2.23-3.04 2.23-4.299zM8.38 13.111h-3.48c-.28 0-.52-.24-.52-.52v-5.18c0-.28.24-.52.52-.52.28 0 .52.24.52.52v4.66h2.96c.28 0 .52.24.52.52 0 .28-.24.52-.52.52zm3.32-5.7c0-.28-.24-.52-.52-.52s-.52.24-.52.52v5.18c0 .28.24.52.52.52.28 0 .52-.24.52-.52v-5.18zm4.84 5.18c0 .22-.16.42-.4.49-.04.01-.08.01-.12.01-.18 0-.34-.1-.44-.24l-2.42-3.1v2.84c0 .28-.24.52-.52.52-.28 0-.52-.24-.52-.52v-5.18c0-.22.16-.42.4-.49.04-.01.08-.01.12-.01.18 0 .34.1.44.24l2.42 3.1v-2.84c0-.28.24-.52.52-.52s.52.24.52.52v5.18zm3.9-2.22h-2.12v1.7h2.12c.28 0 .52.24.52.52s-.24.52-.52.52h-2.64c-.28 0-.52-.24-.52-.52v-5.18c0-.28.24-.52.52-.52h2.64c.28 0 .52.24.52.52s-.24.52-.52.52h-2.12v1.44h2.12c.28 0 .52.24.52.52s-.24.52-.52.52z"/>
-    </svg>
-    LINEでログイン
-  </button>
+  <a href="{urls['line']}" target="_blank" style="text-decoration:none;width:240px;">
+    <div style="display:flex;align-items:center;justify-content:center;gap:12px;background:#06C755;
+                border-radius:16px;padding:12px;font-size:15px;font-weight:700;color:white;
+                box-shadow:0 4px 12px rgba(6,199,85,0.25);cursor:pointer;height:48px;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M24 10.304c0-4.505-5.383-8.17-12-8.17s-12 3.665-12 8.17c0 4.035 4.27 7.42 10.04 8.045.39.085.92.258 1.05.592.12.308.08.79.04 1.103l-.17 1.034c-.05.313-.25 1.225 1.07.67 1.32-.555 7.14-4.2 9.74-7.19 1.48-1.78 2.23-3.04 2.23-4.299zM8.38 13.111h-3.48c-.28 0-.52-.24-.52-.52v-5.18c0-.28.24-.52.52-.52.28 0 .52.24.52.52v4.66h2.96c.28 0 .52.24.52.52 0 .28-.24.52-.52.52zm3.32-5.7c0-.28-.24-.52-.52-.52s-.52.24-.52.52v5.18c0 .28.24.52.52.52.28 0 .52-.24.52-.52v-5.18zm4.84 5.18c0 .22-.16.42-.4.49-.04.01-.08.01-.12.01-.18 0-.34-.1-.44-.24l-2.42-3.1v2.84c0 .28-.24.52-.52.52-.28 0-.52-.24-.52-.52v-5.18c0-.22.16-.42.4-.49.04-.01.08-.01.12-.01.18 0 .34.1.44.24l2.42 3.1v-2.84c0-.28.24-.52.52-.52s.52.24.52.52v5.18zm3.9-2.22h-2.12v1.7h2.12c.28 0 .52.24.52.52s-.24.52-.52.52h-2.64c-.28 0-.52-.24-.52-.52v-5.18c0-.28.24-.52.52-.52h2.64c.28 0 .52.24.52.52s-.24.52-.52.52h-2.12v1.44h2.12c.28 0 .52.24.52.52s-.24.52-.52.52z"/>
+      </svg>
+      LINEでログイン
+    </div>
+  </a>
 
   <!-- Google Login -->
-  <button onclick="window.top.location.href='{urls['google']}'" 
-          style="display:flex;align-items:center;justify-content:center;gap:12px;background:white;border:2px solid #E2E8F0;
-                 border-radius:16px;padding:12px;font-size:15px;font-weight:700;color:#1A1A2E;
-                 box-shadow:0 4px 12px rgba(0,0,0,0.08);cursor:pointer;width:240px;height:48px;">
-    <svg width="20" height="20" viewBox="0 0 24 24">
-      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-    </svg>
-    Googleでログイン
-  </button>
+  <a href="{urls['google']}" target="_blank" style="text-decoration:none;width:240px;">
+    <div style="display:flex;align-items:center;justify-content:center;gap:12px;background:white;border:2px solid #E2E8F0;
+                border-radius:16px;padding:12px;font-size:15px;font-weight:700;color:#1A1A2E;
+                box-shadow:0 4px 12px rgba(0,0,0,0.08);cursor:pointer;height:48px;">
+      <svg width="20" height="20" viewBox="0 0 24 24">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+      </svg>
+      Googleでログイン
+    </div>
+  </a>
 </div>
 """, unsafe_allow_html=True)
 
