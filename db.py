@@ -3,6 +3,7 @@ import hashlib
 import json
 import os
 import base64
+import time
 import urllib.parse
 from datetime import datetime, timezone
 
@@ -67,6 +68,16 @@ def init_db():
 # ============================================================
 #  認証（Supabase Auth × Google OAuth / PKCE）
 # ============================================================
+
+@st.cache_resource
+def _pkce_state():
+    """サーバープロセス全体で共有する PKCE code_verifier のストア。
+    GoTrue が redirect_to のクエリパラメータを上書きするため、
+    URL 経由では code_verifier を渡せない。サーバーサイドに保持する。
+    """
+    return {"code_verifier": None, "ts": 0.0}
+
+
 def _generate_pkce_pair():
     """code_verifier と code_challenge を生成する"""
     code_verifier = base64.urlsafe_b64encode(os.urandom(40)).decode().rstrip("=")
@@ -77,30 +88,46 @@ def _generate_pkce_pair():
 
 def get_google_auth_url(redirect_to: str) -> str:
     """Google OAuth の認証URLを返す。
-    code_verifier を redirect_to に ?cv= として埋め込み、
-    コールバック時に取り出せるようにする。
+    code_verifier はサーバーサイドキャッシュに保存する。
+    （GoTrue が redirect_to のクエリパラメータを ?code= で上書きするため
+      URL 経由で渡すと消える）
     """
     code_verifier, code_challenge = _generate_pkce_pair()
 
-    # code_verifier を redirect_to に付与（コールバックで返ってくる）
-    redirect_with_cv = f"{redirect_to}?cv={urllib.parse.quote(code_verifier)}"
+    # サーバーサイドに保存（URL 経由は GoTrue に上書きされるため不要）
+    state = _pkce_state()
+    state["code_verifier"] = code_verifier
+    state["ts"] = time.time()
 
     supabase_url = st.secrets["SUPABASE_URL"]
     qs = urllib.parse.urlencode({
         "provider": "google",
-        "redirect_to": redirect_with_cv,
+        "redirect_to": redirect_to,
         "code_challenge": code_challenge,
         "code_challenge_method": "s256",
     })
     return f"{supabase_url}/auth/v1/authorize?{qs}"
 
 
-def exchange_code_for_session(code: str, code_verifier: str):
+def exchange_code_for_session(code: str, code_verifier: str = ""):
     """OAuth コールバックのコードをセッションに交換する"""
+    cv = code_verifier
+    if not cv:
+        # URL から来なかった場合はサーバーサイドキャッシュを使う
+        state = _pkce_state()
+        stored = state.get("code_verifier")
+        ts = state.get("ts", 0.0)
+        if stored and (time.time() - ts) < 600:
+            cv = stored
+            state["code_verifier"] = None  # 使い捨て
+
+    if not cv:
+        raise ValueError("PKCE code_verifier が見つかりません。もう一度ログインしてください。")
+
     sb = get_supabase()
     return sb.auth.exchange_code_for_session({
         "auth_code": code,
-        "code_verifier": code_verifier,
+        "code_verifier": cv,
     })
 
 

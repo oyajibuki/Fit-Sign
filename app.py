@@ -195,6 +195,11 @@ def page_login():
 </div>
 """, unsafe_allow_html=True)
 
+    # エラーが session_state に残っていれば表示
+    if "oauth_error" in st.session_state:
+        err = st.session_state.pop("oauth_error")
+        st.error(f"ログインエラー: {err}")
+
     redirect_to = get_base_url()
     auth_url = get_google_auth_url(redirect_to)
 
@@ -1109,21 +1114,21 @@ def main():
     # ── OAuth コールバック処理 ────────────────────────────
     if "code" in params:
         code = params.get("code", "")
+        # cv は GoTrue に上書きされる場合があるため空でも構わない
         code_verifier = params.get("cv", "")
         try:
-            if not code_verifier:
-                raise ValueError("code_verifier が見つかりません。再度ログインしてください。")
             result = exchange_code_for_session(code, code_verifier)
             if result is None or result.user is None:
                 raise ValueError("ユーザー情報の取得に失敗しました。")
             st.session_state.user_id = result.user.id
+            st.session_state.pop("oauth_error", None)
             st.query_params.clear()
             st.rerun()
         except Exception as e:
+            # エラーを session_state に保存してから params をクリア → rerun後に表示
+            st.session_state["oauth_error"] = str(e)
             st.query_params.clear()
-            st.error(f"ログインエラー: {e}")
-            if st.button("再度ログインする"):
-                st.rerun()
+            st.rerun()
         return
 
     # ── 未ログインはログインページへ ─────────────────────
