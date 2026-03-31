@@ -109,8 +109,8 @@ def get_auth_url(provider: str, redirect_to: str) -> str:
         "redirect_to": final_redirect,
         "code_challenge": code_challenge,
         "code_challenge_method": "s256",
-        # LINE 等で profile 情報を取得するために必要
-        "scope": "openid profile email" if provider == "google" else "openid profile",
+        # LINE (custom:line) では IDトークンの検証エラー回避のため openid を外す場合がある
+        "scope": "openid profile email" if provider == "google" else "profile",
     })
     return f"{supabase_url}/auth/v1/authorize?{qs}"
 
@@ -120,7 +120,7 @@ def get_google_auth_url(redirect_to: str) -> str:
 
 
 def get_line_auth_url(redirect_to: str) -> str:
-    return get_auth_url("line", redirect_to)
+    return get_auth_url("custom:line", redirect_to)
 
 
 def exchange_code_for_session(code: str, flow_id: str = ""):
