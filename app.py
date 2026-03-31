@@ -203,6 +203,21 @@ def page_login():
     redirect_to = get_base_url()
     auth_url = get_google_auth_url(redirect_to)
 
+    # ── DEBUG（確認後に削除）────────────────────────────
+    with st.expander("🔧 デバッグ情報"):
+        st.write("**redirect_to:**", redirect_to)
+        st.write("**auth_url:**", auth_url)
+        try:
+            st.write("**BASE_URL (secrets):**", st.secrets.get("BASE_URL", "未設定"))
+        except Exception as ex:
+            st.write("**secrets エラー:**", str(ex))
+        try:
+            host = st.context.headers.get("Host", "なし")
+            st.write("**Host ヘッダー:**", host)
+        except Exception as ex:
+            st.write("**Host 取得エラー:**", str(ex))
+    # ── DEBUG ここまで ────────────────────────────────
+
     st.markdown(f"""
 <div style="display:flex;justify-content:center;margin-top:-120px;">
   <a href="{auth_url}" target="_self" style="text-decoration:none;">
