@@ -1123,15 +1123,6 @@ def page_law(user):
 def main():
     params = st.query_params
 
-    # ── 【一時的デバッグ】 ─────────────────────────────
-    if "code" in params or "error" in params or "oauth_error" in st.session_state:
-        with st.expander("🔍 認証デバッグ情報 (開発完了後に削除予定)", expanded=True):
-            st.write("URLパラメーター:", params.to_dict())
-            st.write("セッション情報のキー:", list(st.session_state.keys()))
-            if "oauth_error" in st.session_state:
-                st.warning(f"検出されたエラー: {st.session_state.oauth_error}")
-    # ──────────────────────────────────────────────────
-
     # ── 署名ページは認証不要 ──────────────────────────────
     if params.get("page") == "sign":
         page_sign(params.get("id", ""))

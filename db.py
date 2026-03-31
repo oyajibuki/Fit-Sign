@@ -120,7 +120,7 @@ def get_google_auth_url(redirect_to: str) -> str:
 
 
 def get_line_auth_url(redirect_to: str) -> str:
-    return get_auth_url("custom:line", redirect_to)
+    return get_auth_url("line", redirect_to)
 
 
 def exchange_code_for_session(code: str, flow_id: str = ""):
