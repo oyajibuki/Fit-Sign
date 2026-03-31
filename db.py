@@ -4,13 +4,13 @@ import json
 from datetime import datetime, timezone
 
 import streamlit as st
-from supabase import create_client, Client
+from supabase import create_client
 
 # ============================================================
 #  Supabase クライアント（secrets.toml / Streamlit Cloud Secrets）
 # ============================================================
 @st.cache_resource
-def get_supabase() -> Client:
+def get_supabase():
     url = st.secrets["SUPABASE_URL"]
     key = st.secrets["SUPABASE_KEY"]
     return create_client(url, key)
