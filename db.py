@@ -8,6 +8,7 @@ import urllib.parse
 from datetime import datetime, timezone
 
 import streamlit as st
+import requests
 from supabase import create_client
 
 # ============================================================
@@ -125,7 +126,7 @@ import uuid
 def get_line_auth_url(redirect_to: str) -> str:
     """LINEの認可URLを直接生成する（Supabaseを介さない）"""
     flow_id = str(uuid.uuid4())
-    code_verifier, code_challenge = _generate_pkce()
+    code_verifier, code_challenge = _generate_pkce_pair()
     
     storage = _pkce_storage()
     storage[flow_id] = {
