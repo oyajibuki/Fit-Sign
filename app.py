@@ -209,7 +209,7 @@ def page_login():
 
     st.markdown(f"""
 <div style="display:flex;justify-content:center;margin-top:-120px;">
-  <a href="{auth_url}" target="_top" style="text-decoration:none;">
+  <a href="{auth_url}" target="_blank" style="text-decoration:none;">
     <div style="display:flex;align-items:center;gap:12px;background:white;border:2px solid #E2E8F0;
                 border-radius:16px;padding:14px 28px;font-size:16px;font-weight:700;color:#1A1A2E;
                 box-shadow:0 4px 12px rgba(0,0,0,0.08);cursor:pointer;">
