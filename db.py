@@ -62,6 +62,31 @@ def init_db():
 
 
 # ============================================================
+#  認証（Supabase Auth × Google OAuth）
+# ============================================================
+def get_google_auth_url(redirect_to: str) -> str:
+    """Google OAuth の認証URLを取得する"""
+    sb = get_supabase()
+    res = sb.auth.sign_in_with_oauth({
+        "provider": "google",
+        "options": {"redirect_to": redirect_to},
+    })
+    return res.url
+
+
+def exchange_code_for_session(code: str):
+    """OAuth コールバックのコードをセッションに交換する"""
+    sb = get_supabase()
+    return sb.auth.exchange_code_for_session({"auth_code": code})
+
+
+def sign_out():
+    """ログアウト"""
+    sb = get_supabase()
+    sb.auth.sign_out()
+
+
+# ============================================================
 #  ユーザー
 # ============================================================
 def get_or_create_user(user_id: str) -> dict:
