@@ -194,7 +194,8 @@ def page_login():
 </div>
 """, unsafe_allow_html=True)
 
-    redirect_to = get_base_url()
+    # secrets の BASE_URL を優先（get_base_url() は localhost をキャッシュする場合がある）
+    redirect_to = st.secrets.get("BASE_URL", get_base_url())
     auth_url = get_google_auth_url(redirect_to)
 
     st.markdown(f"""
