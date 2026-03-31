@@ -163,17 +163,18 @@ LIMIT_PAID = 100
 
 
 def get_base_url():
-    if "base_url" not in st.session_state:
-        try:
-            host = st.context.headers.get("Host", "localhost:8501")
-            proto = "https" if "streamlit.app" in host else "http"
-            st.session_state.base_url = f"{proto}://{host}"
-        except Exception:
-            try:
-                st.session_state.base_url = st.secrets.get("BASE_URL", "http://localhost:8501")
-            except Exception:
-                st.session_state.base_url = "http://localhost:8501"
-    return st.session_state.base_url
+    # secrets の BASE_URL を最優先（session_state にキャッシュしない）
+    try:
+        return st.secrets["BASE_URL"]
+    except (KeyError, Exception):
+        pass
+    # fallback: Host ヘッダーから推測
+    try:
+        host = st.context.headers.get("Host", "localhost:8501")
+        proto = "https" if "streamlit.app" in host else "http"
+        return f"{proto}://{host}"
+    except Exception:
+        return "http://localhost:8501"
 
 
 def get_user_id():
@@ -194,8 +195,7 @@ def page_login():
 </div>
 """, unsafe_allow_html=True)
 
-    # secrets の BASE_URL を優先（get_base_url() は localhost をキャッシュする場合がある）
-    redirect_to = st.secrets.get("BASE_URL", get_base_url())
+    redirect_to = get_base_url()
     auth_url = get_google_auth_url(redirect_to)
 
     st.markdown(f"""
