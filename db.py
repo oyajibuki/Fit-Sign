@@ -70,12 +70,11 @@ def init_db():
 # ============================================================
 
 @st.cache_resource
-def _pkce_state():
-    """サーバープロセス全体で共有する PKCE code_verifier のストア。
-    GoTrue が redirect_to のクエリパラメータを上書きするため、
-    URL 経由では code_verifier を渡せない。サーバーサイドに保持する。
+def _pkce_storage():
+    """フローID毎に PKCE code_verifier を保持するストア。
+    サーバーサイドで一元管理し、リダイレクト後の照合に使用。
     """
-    return {"code_verifier": None, "ts": 0.0}
+    return {}
 
 
 def _generate_pkce_pair():
@@ -88,19 +87,26 @@ def _generate_pkce_pair():
 
 def get_auth_url(provider: str, redirect_to: str) -> str:
     """OAuth の認証URLを返す。
-    code_verifier はサーバーサイドキャッシュに保存する。
+    PKCE ミスマッチを防ぐため、フローIDを発行して管理。
     """
     code_verifier, code_challenge = _generate_pkce_pair()
+    flow_id = str(uuid.uuid4())
 
     # サーバーサイドに保存
-    state = _pkce_state()
-    state["code_verifier"] = code_verifier
-    state["ts"] = time.time()
+    storage = _pkce_storage()
+    storage[flow_id] = {
+        "cv": code_verifier,
+        "ts": time.time()
+    }
+
+    # redirect_to に flow_id (fid) を付与
+    sep = "&" if "?" in redirect_to else "?"
+    final_redirect = f"{redirect_to}{sep}fid={flow_id}"
 
     supabase_url = st.secrets["SUPABASE_URL"].rstrip("/")
     qs = urllib.parse.urlencode({
         "provider": provider,
-        "redirect_to": redirect_to,
+        "redirect_to": final_redirect,
         "code_challenge": code_challenge,
         "code_challenge_method": "s256",
         # LINE 等で profile 情報を取得するために必要
@@ -117,20 +123,21 @@ def get_line_auth_url(redirect_to: str) -> str:
     return get_auth_url("custom:line", redirect_to)
 
 
-def exchange_code_for_session(code: str, code_verifier: str = ""):
+def exchange_code_for_session(code: str, flow_id: str = ""):
     """OAuth コールバックのコードをセッションに交換する"""
-    cv = code_verifier
-    if not cv:
-        # URL から来なかった場合はサーバーサイドキャッシュを使う
-        state = _pkce_state()
-        stored = state.get("code_verifier")
-        ts = state.get("ts", 0.0)
-        if stored and (time.time() - ts) < 600:
-            cv = stored
-            state["code_verifier"] = None  # 使い捨て
+    cv = ""
+    if flow_id:
+        storage = _pkce_storage()
+        data = storage.get(flow_id)
+        if data:
+            ts = data.get("ts", 0.0)
+            # 有効期限 10分
+            if (time.time() - ts) < 600:
+                cv = data.get("cv", "")
+            storage.pop(flow_id, None)  # 使い捨て
 
     if not cv:
-        raise ValueError("PKCE code_verifier が見つかりません。もう一度ログインしてください。")
+        raise ValueError("認証セッションが無効、または期限切れです。もう一度ログインしてください。")
 
     sb = get_supabase()
     return sb.auth.exchange_code_for_session({
