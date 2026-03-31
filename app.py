@@ -1148,7 +1148,9 @@ def main():
             st.rerun()
         except Exception as e:
             # エラーを session_state に保存してから params をクリア → rerun後に表示
-            st.session_state["oauth_error"] = str(e)
+            import traceback
+            error_detail = f"{str(e)}\n\n{traceback.format_exc()}"
+            st.session_state["oauth_error"] = error_detail
             st.query_params.clear()
             st.rerun()
         return
@@ -1159,7 +1161,10 @@ def main():
         page_login()
         return
 
-    user = get_or_create_user(user_id)
+    user = get_or_create_user(user_id, {
+        "email": st.session_state.get("google_email", ""),
+        "display_name": st.session_state.get("google_name", "")
+    })
 
     page = st.session_state.get("page", "")
     if "page" in st.query_params:
