@@ -200,23 +200,11 @@ def page_login():
         err = st.session_state.pop("oauth_error")
         st.error(f"ログインエラー: {err}")
 
-    redirect_to = get_base_url()
-    auth_url = get_google_auth_url(redirect_to)
-
-    # ── DEBUG（確認後に削除）────────────────────────────
-    with st.expander("🔧 デバッグ情報"):
-        st.write("**redirect_to:**", redirect_to)
-        st.write("**auth_url:**", auth_url)
-        try:
-            st.write("**BASE_URL (secrets):**", st.secrets.get("BASE_URL", "未設定"))
-        except Exception as ex:
-            st.write("**secrets エラー:**", str(ex))
-        try:
-            host = st.context.headers.get("Host", "なし")
-            st.write("**Host ヘッダー:**", host)
-        except Exception as ex:
-            st.write("**Host 取得エラー:**", str(ex))
-    # ── DEBUG ここまで ────────────────────────────────
+    # auth URL は session ごとに1度だけ生成する（rerun のたびに上書きすると PKCE ミスマッチになる）
+    if "login_auth_url" not in st.session_state:
+        redirect_to = get_base_url()
+        st.session_state["login_auth_url"] = get_google_auth_url(redirect_to)
+    auth_url = st.session_state["login_auth_url"]
 
     st.markdown(f"""
 <div style="display:flex;justify-content:center;margin-top:-120px;">
