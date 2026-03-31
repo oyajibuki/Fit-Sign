@@ -1,6 +1,9 @@
 import uuid
 import hashlib
 import json
+import os
+import base64
+import urllib.parse
 from datetime import datetime, timezone
 
 import streamlit as st
@@ -62,22 +65,43 @@ def init_db():
 
 
 # ============================================================
-#  認証（Supabase Auth × Google OAuth）
+#  認証（Supabase Auth × Google OAuth / PKCE）
 # ============================================================
+def _generate_pkce_pair():
+    """code_verifier と code_challenge を生成する"""
+    code_verifier = base64.urlsafe_b64encode(os.urandom(40)).decode().rstrip("=")
+    digest = hashlib.sha256(code_verifier.encode()).digest()
+    code_challenge = base64.urlsafe_b64encode(digest).decode().rstrip("=")
+    return code_verifier, code_challenge
+
+
 def get_google_auth_url(redirect_to: str) -> str:
-    """Google OAuth の認証URLを取得する"""
-    sb = get_supabase()
-    res = sb.auth.sign_in_with_oauth({
+    """Google OAuth の認証URLを返す。
+    code_verifier を redirect_to に ?cv= として埋め込み、
+    コールバック時に取り出せるようにする。
+    """
+    code_verifier, code_challenge = _generate_pkce_pair()
+
+    # code_verifier を redirect_to に付与（コールバックで返ってくる）
+    redirect_with_cv = f"{redirect_to}?cv={urllib.parse.quote(code_verifier)}"
+
+    supabase_url = st.secrets["SUPABASE_URL"]
+    qs = urllib.parse.urlencode({
         "provider": "google",
-        "options": {"redirect_to": redirect_to},
+        "redirect_to": redirect_with_cv,
+        "code_challenge": code_challenge,
+        "code_challenge_method": "s256",
     })
-    return res.url
+    return f"{supabase_url}/auth/v1/authorize?{qs}"
 
 
-def exchange_code_for_session(code: str):
+def exchange_code_for_session(code: str, code_verifier: str):
     """OAuth コールバックのコードをセッションに交換する"""
     sb = get_supabase()
-    return sb.auth.exchange_code_for_session({"auth_code": code})
+    return sb.auth.exchange_code_for_session({
+        "auth_code": code,
+        "code_verifier": code_verifier,
+    })
 
 
 def sign_out():

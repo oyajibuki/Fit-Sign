@@ -1108,14 +1108,22 @@ def main():
 
     # ── OAuth コールバック処理 ────────────────────────────
     if "code" in params:
+        code = params.get("code", "")
+        code_verifier = params.get("cv", "")
         try:
-            session = exchange_code_for_session(params["code"])
-            st.session_state.user_id = session.user.id
+            if not code_verifier:
+                raise ValueError("code_verifier が見つかりません。再度ログインしてください。")
+            result = exchange_code_for_session(code, code_verifier)
+            if result is None or result.user is None:
+                raise ValueError("ユーザー情報の取得に失敗しました。")
+            st.session_state.user_id = result.user.id
             st.query_params.clear()
             st.rerun()
         except Exception as e:
-            st.error(f"ログインに失敗しました: {e}")
             st.query_params.clear()
+            st.error(f"ログインエラー: {e}")
+            if st.button("再度ログインする"):
+                st.rerun()
         return
 
     # ── 未ログインはログインページへ ─────────────────────
