@@ -221,6 +221,12 @@ def create_contract(
         "created_at": now,
         "hash": hash_val,
     }).execute()
+    # 作成時点でカウントを増やす（未署名でも1件とする）
+    user = get_user(creator_id)
+    if user:
+        sb.table("users").update({
+            "contract_count": (user.get("contract_count") or 0) + 1
+        }).eq("id", creator_id).execute()
     return contract_id
 
 
@@ -263,15 +269,7 @@ def sign_contract(contract_id: str, signer_name: str, signer_ip: str):
         "status": "signed",
         "signed_at": now,
     }).eq("id", contract_id).execute()
-    # contract_count をインクリメント
-    res = sb.table("contracts").select("creator_id").eq("id", contract_id).execute()
-    if res.data:
-        creator_id = res.data[0]["creator_id"]
-        user = get_user(creator_id)
-        if user:
-            sb.table("users").update({
-                "contract_count": (user.get("contract_count") or 0) + 1
-            }).eq("id", creator_id).execute()
+    # カウントは create_contract 時に済み。署名時は増やさない
 
 
 def reject_contract(contract_id: str, reason: str):

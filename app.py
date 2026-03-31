@@ -111,9 +111,10 @@ section[data-testid="stSidebar"] { display:none; }
 /* Buttons */
 div.stButton > button {
     width:100%; border-radius:20px !important; font-weight:800 !important;
-    font-family:'Inter', sans-serif !important; font-size:15px !important;
-    padding:16px 12px !important; border:none !important;
-    transition:all .25s cubic-bezier(0.2, 1, 0.3, 1) !important; white-space:nowrap;
+    font-family:'Inter', sans-serif !important; font-size:14px !important;
+    padding:14px 8px !important; border:none !important;
+    transition:all .25s cubic-bezier(0.2, 1, 0.3, 1) !important; white-space:normal !important;
+    word-break:keep-all !important; overflow-wrap:break-word !important;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
 }
 div.stButton > button:first-child { background:#1E293B !important; color:white !important; }
@@ -394,10 +395,12 @@ def page_profile(user):
 """, unsafe_allow_html=True)
 
     with st.container():
-        name = st.text_input("氏名・会社名", value=user.get("display_name", ""), placeholder="山田 太郎 / 株式会社サンプル")
+        default_name = user.get("display_name") or st.session_state.get("google_name", "")
+        default_email = user.get("email") or st.session_state.get("google_email", "")
+        name = st.text_input("氏名・会社名", value=default_name, placeholder="山田 太郎 / 株式会社サンプル")
         address = st.text_input("住所", value=user.get("address", ""), placeholder="東京都渋谷区1-1-1 ...")
         phone = st.text_input("電話番号", value=user.get("phone", ""), placeholder="090-0000-0000")
-        email = st.text_input("メールアドレス", value=user.get("email", ""), placeholder="yamada@example.com")
+        email = st.text_input("メールアドレス", value=default_email, placeholder="yamada@example.com")
 
     st.markdown("<div style='margin-bottom:24px'></div>", unsafe_allow_html=True)
     
@@ -918,12 +921,6 @@ def page_list(user):
         if st.button("✍️ 新規契約"):
             nav_to("create")
 
-    with st.expander("⚙️ 開発者設定"):
-        st.markdown(f"**あなたのID:** `{user['id']}`")
-        new_base = st.text_input("BASE_URL", value=get_base_url())
-        if st.button("URLを保存"):
-            st.session_state.base_url = new_base
-            st.success("保存しました")
 
 
 def page_detail(user):
@@ -1124,7 +1121,12 @@ def main():
             if result is None or result.user is None:
                 raise ValueError("ユーザー情報の取得に失敗しました。")
             st.session_state.user_id = result.user.id
+            # Google アカウント情報を session_state に保存（プロフィール初期値用）
+            meta = result.user.user_metadata or {}
+            st.session_state["google_email"] = result.user.email or ""
+            st.session_state["google_name"] = meta.get("full_name") or meta.get("name") or ""
             st.session_state.pop("oauth_error", None)
+            st.session_state.pop("login_auth_url", None)
             st.query_params.clear()
             st.rerun()
         except Exception as e:
