@@ -129,8 +129,9 @@ INSERT INTO templates (name, emoji, body, description, is_paid_only) VALUES
 )
 ON CONFLICT DO NOTHING;
 
--- ── RLS（Row Level Security）は一旦OFF ────────────────────
--- サーバーサイド（Streamlit）からservice_role keyで接続するため不要
-ALTER TABLE users     DISABLE ROW LEVEL SECURITY;
-ALTER TABLE templates DISABLE ROW LEVEL SECURITY;
-ALTER TABLE contracts DISABLE ROW LEVEL SECURITY;
+-- ── RLS（Row Level Security）────────────────────────────
+-- service_role key は RLS を自動バイパスするため Streamlit の動作に影響なし
+-- ポリシーなしで有効化 = anon/authenticated による直接アクセスをすべて遮断
+ALTER TABLE users     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE templates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE contracts ENABLE ROW LEVEL SECURITY;
