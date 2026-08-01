@@ -16,8 +16,27 @@ from supabase import create_client
 # ============================================================
 @st.cache_resource
 def get_supabase():
+    """データアクセス専用クライアント（service_role 固定）。
+
+    ここで auth 系（sign_in / exchange_code_for_session / sign_out）を呼んではいけない。
+    supabase-py の _listen_to_auth_events が SIGNED_IN / SIGNED_OUT / TOKEN_REFRESHED で
+    Authorization ヘッダをログインユーザーの access_token に差し替えるため、
+    service_role 権限を失い、RLS を閉じた状態では permission denied になる。
+    認証には _new_auth_client() を使うこと。
+    """
     url = st.secrets["SUPABASE_URL"]
     key = st.secrets["SUPABASE_KEY"]
+    return create_client(url, key)
+
+
+def _new_auth_client():
+    """認証専用の使い捨てクライアント。
+
+    キャッシュしない。@st.cache_resource で共有すると、あるユーザーのログインが
+    他ユーザーのクライアントのヘッダまで書き換えてしまうため。
+    """
+    url = st.secrets["SUPABASE_URL"]
+    key = st.secrets.get("SUPABASE_ANON_KEY") or st.secrets["SUPABASE_KEY"]
     return create_client(url, key)
 
 
@@ -221,7 +240,7 @@ def exchange_code_for_session(code: str, flow_id: str = ""):
     if not cv:
         raise ValueError("認証セッションが無効、または期限切れです。もう一度ログインしてください。")
 
-    sb = get_supabase()
+    sb = _new_auth_client()
     return sb.auth.exchange_code_for_session({
         "auth_code": code,
         "code_verifier": cv,
@@ -230,7 +249,7 @@ def exchange_code_for_session(code: str, flow_id: str = ""):
 
 def sign_out():
     """ログアウト"""
-    sb = get_supabase()
+    sb = _new_auth_client()
     sb.auth.sign_out()
 
 
